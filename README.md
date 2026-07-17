@@ -7,7 +7,8 @@ This repository documents the mechanical design and development of a robotic arm
 | Area | Artifact | Description |
 | --- | --- | --- |
 | Project workflow | [Robotic Arm Project Workflow](docs/project-workflow/Robotic-Arm-Project-Workflow.pdf) | Planning and workflow documentation for the project. |
-| CAD | [Robot Arm Base v1](cad/base/Robot-Arm-Base-v1.SLDPRT) | SolidWorks part model for the robot arm's base/waist component. |
+| CAD — base | [Robot Arm Base v1](cad/base/Robot-Arm-Base-v1.SLDPRT) | SolidWorks part model for the robot arm's structural base. |
+| CAD — waist | [Robot Arm Waist v1](cad/waist/Robot-Arm-Waist-v1.SLDPRT) | SolidWorks part model for the rotating waist component. |
 
 ## Repository structure
 
@@ -15,8 +16,10 @@ This repository documents the mechanical design and development of a robotic arm
 .
 ├── cad/
 │   ├── README.md
-│   └── base/
-│       └── Robot-Arm-Base-v1.SLDPRT
+│   ├── base/
+│   │   └── Robot-Arm-Base-v1.SLDPRT
+│   └── waist/
+│       └── Robot-Arm-Waist-v1.SLDPRT
 └── docs/
     └── project-workflow/
         └── Robotic-Arm-Project-Workflow.pdf
