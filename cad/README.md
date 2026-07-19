@@ -12,6 +12,7 @@ CAD files are grouped by robot subsystem so the repository can grow without mixi
 
 ## Link
 
+- [`link/Robot-Arm-Gripper-Link-1.SLDPRT`](link/Robot-Arm-Gripper-Link-1.SLDPRT) contains the first gripper connection link.
 - [`link/Robot-Arm-Link-1.SLDPRT`](link/Robot-Arm-Link-1.SLDPRT) contains the first structural arm link.
 - [`link/Robot-Arm-Link-2.SLDPRT`](link/Robot-Arm-Link-2.SLDPRT) contains the second structural arm link.
 - [`link/Robot-Arm-Link-3.SLDPRT`](link/Robot-Arm-Link-3.SLDPRT) contains the third structural arm link.
