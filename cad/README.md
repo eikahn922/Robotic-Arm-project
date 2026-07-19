@@ -8,7 +8,8 @@ CAD files are grouped by robot subsystem so the repository can grow without mixi
 
 ## Link
 
-- [`link/Robot-Arm-Link-v1.SLDPRT`](link/Robot-Arm-Link-v1.SLDPRT) contains the first SolidWorks model of a structural arm linkage.
+- [`link/Robot-Arm-Link-1.SLDPRT`](link/Robot-Arm-Link-1.SLDPRT) contains the first structural arm link.
+- [`link/Robot-Arm-Link-2.SLDPRT`](link/Robot-Arm-Link-2.SLDPRT) contains the second structural arm link.
 
 ## Waist
 
