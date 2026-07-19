@@ -6,7 +6,8 @@ This repository documents the mechanical design and development of a robotic arm
 
 | Area | Artifact | Description |
 | --- | --- | --- |
-| Project workflow | [Robotic Arm Project Workflow](docs/project-workflow/Robotic-Arm-Project-Workflow.pdf) | Planning and workflow documentation for the project. |
+| Active timeline | [3-DOF Robotic Arm Project Timeline](docs/project-workflow/PROJECT_TIMELINE.md) | Daily development plan through August 18, including remote-work constraints and completion criteria. |
+| Project workflow | [Robotic Arm Project Workflow](docs/project-workflow/Robotic-Arm-Project-Workflow.pdf) | Detailed engineering and implementation workflow for the project. |
 | CAD — base | [Robot Arm Base v1](cad/base/Robot-Arm-Base-v1.SLDPRT) | SolidWorks part model for the robot arm's structural base. |
 | CAD — gera | [gearRobotArm.SLDPRT](cad/gera/gearRobotArm.SLDPRT) | SolidWorks part model for the robot arm gear. |
 | CAD — gripper link | [Robot Arm Gripper Link 1](cad/link/Robot-Arm-Gripper-Link-1.SLDPRT) | SolidWorks part model for the gripper connection link. |
@@ -39,10 +40,12 @@ This repository documents the mechanical design and development of a robotic arm
 │       └── Robot-Arm-Waist-v1.SLDPRT
 └── docs/
     └── project-workflow/
+        ├── PROJECT_TIMELINE.md
         └── Robotic-Arm-Project-Workflow.pdf
 ```
 
 ## File formats
 
 - `.SLDPRT` files are native SolidWorks part models.
+- `.md` files contain repository-readable project plans and documentation.
 - `.pdf` files contain project documentation suitable for viewing without CAD software.
