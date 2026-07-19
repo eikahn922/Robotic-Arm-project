@@ -8,6 +8,7 @@ This repository documents the mechanical design and development of a robotic arm
 | --- | --- | --- |
 | Project workflow | [Robotic Arm Project Workflow](docs/project-workflow/Robotic-Arm-Project-Workflow.pdf) | Planning and workflow documentation for the project. |
 | CAD — base | [Robot Arm Base v1](cad/base/Robot-Arm-Base-v1.SLDPRT) | SolidWorks part model for the robot arm's structural base. |
+| CAD — gera | [gearRobotArm.SLDPRT](cad/gera/gearRobotArm.SLDPRT) | SolidWorks part model for the robot arm gear. |
 | CAD — link 1 | [Robot Arm Link 1](cad/link/Robot-Arm-Link-1.SLDPRT) | SolidWorks part model for the first structural arm link. |
 | CAD — link 2 | [Robot Arm Link 2](cad/link/Robot-Arm-Link-2.SLDPRT) | SolidWorks part model for the second structural arm link. |
 | CAD — link 3 | [Robot Arm Link 3](cad/link/Robot-Arm-Link-3.SLDPRT) | SolidWorks part model for the third structural arm link. |
@@ -23,6 +24,8 @@ This repository documents the mechanical design and development of a robotic arm
 │   ├── README.md
 │   ├── base/
 │   │   └── Robot-Arm-Base-v1.SLDPRT
+│   ├── gera/
+│   │   └── gearRobotArm.SLDPRT
 │   ├── link/
 │   │   ├── Robot-Arm-Link-1.SLDPRT
 │   │   ├── Robot-Arm-Link-2.SLDPRT
