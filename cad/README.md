@@ -6,16 +6,17 @@ CAD files are grouped by robot subsystem so the repository can grow without mixi
 
 - [`base/Robot-Arm-Base-v1.SLDPRT`](base/Robot-Arm-Base-v1.SLDPRT) contains the first SolidWorks model of the structural base.
 
-## Gera
+## Gear
 
-- [`gera/gearRobotArm.SLDPRT`](gera/gearRobotArm.SLDPRT) contains the robot arm gear model.
+- [`gear/gearRobotArm.SLDPRT`](gear/gearRobotArm.SLDPRT) contains the robot arm gear model.
 
-## Link
+## All Links
 
-- [`link/Robot-Arm-Gripper-Link-1.SLDPRT`](link/Robot-Arm-Gripper-Link-1.SLDPRT) contains the first gripper connection link.
-- [`link/Robot-Arm-Link-1.SLDPRT`](link/Robot-Arm-Link-1.SLDPRT) contains the first structural arm link.
-- [`link/Robot-Arm-Link-2.SLDPRT`](link/Robot-Arm-Link-2.SLDPRT) contains the second structural arm link.
-- [`link/Robot-Arm-Link-3.SLDPRT`](link/Robot-Arm-Link-3.SLDPRT) contains the third structural arm link.
+- [`all-links/Robot-Arm-Gripper-Connecting-Link.SLDPRT`](all-links/Robot-Arm-Gripper-Connecting-Link.SLDPRT) contains the gripper connecting link.
+- [`all-links/Robot-Arm-Gripper-Link-1.SLDPRT`](all-links/Robot-Arm-Gripper-Link-1.SLDPRT) contains the first gripper connection link.
+- [`all-links/Robot-Arm-Link-1.SLDPRT`](all-links/Robot-Arm-Link-1.SLDPRT) contains the first structural arm link.
+- [`all-links/Robot-Arm-Link-2.SLDPRT`](all-links/Robot-Arm-Link-2.SLDPRT) contains the second structural arm link.
+- [`all-links/Robot-Arm-Link-3.SLDPRT`](all-links/Robot-Arm-Link-3.SLDPRT) contains the third structural arm link.
 
 ## Servo
 
