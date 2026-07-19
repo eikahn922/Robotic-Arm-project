@@ -6,6 +6,10 @@ CAD files are grouped by robot subsystem so the repository can grow without mixi
 
 - [`base/Robot-Arm-Base-v1.SLDPRT`](base/Robot-Arm-Base-v1.SLDPRT) contains the first SolidWorks model of the structural base.
 
+## Gera
+
+- [`gera/gearRobotArm.SLDPRT`](gera/gearRobotArm.SLDPRT) contains the robot arm gear model.
+
 ## Link
 
 - [`link/Robot-Arm-Link-1.SLDPRT`](link/Robot-Arm-Link-1.SLDPRT) contains the first structural arm link.
