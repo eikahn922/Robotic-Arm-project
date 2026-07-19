@@ -10,6 +10,7 @@ This repository documents the mechanical design and development of a robotic arm
 | CAD — base | [Robot Arm Base v1](cad/base/Robot-Arm-Base-v1.SLDPRT) | SolidWorks part model for the robot arm's structural base. |
 | CAD — link 1 | [Robot Arm Link 1](cad/link/Robot-Arm-Link-1.SLDPRT) | SolidWorks part model for the first structural arm link. |
 | CAD — link 2 | [Robot Arm Link 2](cad/link/Robot-Arm-Link-2.SLDPRT) | SolidWorks part model for the second structural arm link. |
+| CAD — link 3 | [Robot Arm Link 3](cad/link/Robot-Arm-Link-3.SLDPRT) | SolidWorks part model for the third structural arm link. |
 | CAD — waist | [Robot Arm Waist v1](cad/waist/Robot-Arm-Waist-v1.SLDPRT) | SolidWorks part model for the rotating waist component. |
 
 ## Repository structure
@@ -22,7 +23,8 @@ This repository documents the mechanical design and development of a robotic arm
 │   │   └── Robot-Arm-Base-v1.SLDPRT
 │   ├── link/
 │   │   ├── Robot-Arm-Link-1.SLDPRT
-│   │   └── Robot-Arm-Link-2.SLDPRT
+│   │   ├── Robot-Arm-Link-2.SLDPRT
+│   │   └── Robot-Arm-Link-3.SLDPRT
 │   └── waist/
 │       └── Robot-Arm-Waist-v1.SLDPRT
 └── docs/
