@@ -2,6 +2,11 @@
 
 CAD files are grouped by robot subsystem so the repository can grow without mixing unrelated components.
 
+## Final Assembly
+
+- [`assembly/Robot-Arm-Final-Assembly.SLDASM`](assembly/Robot-Arm-Final-Assembly.SLDASM) contains the final robot arm assembly.
+- [`assembly/README.md`](assembly/README.md) explains how to verify and package its external component references.
+
 ## Base
 
 - [`base/Robot-Arm-Base-v1.SLDPRT`](base/Robot-Arm-Base-v1.SLDPRT) contains the first SolidWorks model of the structural base.

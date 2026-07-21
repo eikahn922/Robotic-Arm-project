@@ -7,6 +7,7 @@ This repository documents the mechanical design and development of a robotic arm
 | Area | Artifact | Description |
 | --- | --- | --- |
 | Project workflow | [Robotic Arm Project Workflow](docs/project-workflow/Robotic-Arm-Project-Workflow.pdf) | Planning and workflow documentation for the project. |
+| Final assembly | [Robot Arm Final Assembly](cad/assembly/Robot-Arm-Final-Assembly.SLDASM) | Complete SolidWorks assembly for the robot arm. |
 | CAD — base | [Robot Arm Base v1](cad/base/Robot-Arm-Base-v1.SLDPRT) | SolidWorks part model for the robot arm's structural base. |
 | CAD — gripper gear | [gearRobotArm.SLDPRT](cad/gripper/gearRobotArm.SLDPRT) | SolidWorks part model for the gripper gear. |
 | CAD — gripper connecting link | [Robot Arm Gripper Connecting Link](cad/all-links/Robot-Arm-Gripper-Connecting-Link.SLDPRT) | SolidWorks part model for the gripper connecting link. |
@@ -25,6 +26,9 @@ This repository documents the mechanical design and development of a robotic arm
 .
 ├── cad/
 │   ├── README.md
+│   ├── assembly/
+│   │   ├── README.md
+│   │   └── Robot-Arm-Final-Assembly.SLDASM
 │   ├── base/
 │   │   └── Robot-Arm-Base-v1.SLDPRT
 │   ├── gripper/
@@ -48,5 +52,6 @@ This repository documents the mechanical design and development of a robotic arm
 
 ## File formats
 
+- `.SLDASM` files are native SolidWorks assemblies that reference component documents.
 - `.SLDPRT` files are native SolidWorks part models.
 - `.pdf` files contain project documentation suitable for viewing without CAD software.
