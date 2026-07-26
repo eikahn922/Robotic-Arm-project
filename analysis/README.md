@@ -36,4 +36,3 @@ Both joints pass this preliminary static comparison. The shoulder is the limitin
 - Wiring, fasteners, bearings, servo horns, and other unmodeled hardware must be added to the moving mass.
 - The completed arm should be bench-tested at reduced command speed while measuring supply voltage, current draw, holding performance, temperature, and joint deflection.
 - If the shoulder overheats, stalls, or sags, reduce reach or mass, add a spring/counterbalance, or select a higher-torque actuator.
-
