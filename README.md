@@ -7,6 +7,8 @@ This repository documents the mechanical design and development of a robotic arm
 | Area | Artifact | Description |
 | --- | --- | --- |
 | Project workflow | [Robotic Arm Project Workflow](docs/project-workflow/Robotic-Arm-Project-Workflow.pdf) | Planning and workflow documentation for the project. |
+| Engineering analysis | [Torque and Servo Sizing Analysis](analysis/README.md) | Formula-driven shoulder and elbow torque calculations, assumptions, results, and validation plan. |
+| Calculation workbook | [3DOF Robotic Arm Torque & Servo Sizing Analysis](analysis/3DOF-Robotic-Arm-Torque-Servo-Sizing-Analysis.xlsx) | Downloadable workbook containing the full servo-sizing calculation model. |
 | Final assembly | [Robot Arm Final Assembly](cad/assembly/Robot-Arm-Final-Assembly.SLDASM) | Complete SolidWorks assembly for the robot arm. |
 | CAD — base | [Robot Arm Base v1](cad/base/Robot-Arm-Base-v1.SLDPRT) | SolidWorks part model for the robot arm's structural base. |
 | CAD — gripper gear | [gearRobotArm.SLDPRT](cad/gripper/gearRobotArm.SLDPRT) | SolidWorks part model for the gripper gear. |
@@ -45,6 +47,9 @@ This repository documents the mechanical design and development of a robotic arm
 │   │   └── SG90 - Micro Servo 9g - Tower Pro.1.SLDPRT
 │   └── waist/
 │       └── Robot-Arm-Waist-v1.SLDPRT
+├── analysis/
+│   ├── README.md
+│   └── 3DOF-Robotic-Arm-Torque-Servo-Sizing-Analysis.xlsx
 └── docs/
     └── project-workflow/
         └── Robotic-Arm-Project-Workflow.pdf
@@ -55,3 +60,4 @@ This repository documents the mechanical design and development of a robotic arm
 - `.SLDASM` files are native SolidWorks assemblies that reference component documents.
 - `.SLDPRT` files are native SolidWorks part models.
 - `.pdf` files contain project documentation suitable for viewing without CAD software.
+- `.xlsx` files contain formula-driven engineering calculations and design inputs.
