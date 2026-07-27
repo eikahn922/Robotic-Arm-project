@@ -16,9 +16,12 @@
 
   <link name="base_link">
     <visual>
-      <origin xyz="0 0 0.04" rpy="0 0 0"/>
+      <!-- SolidWorks exported the mesh Y-up; rotate it into ROS Z-up. -->
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
       <geometry>
-        <cylinder radius="0.08" length="0.08"/>
+        <mesh
+          filename="package://robot_arm_description/STL/base_link.stl"
+          scale="1 1 1"/>
       </geometry>
       <material name="dark_gray"/>
     </visual>
