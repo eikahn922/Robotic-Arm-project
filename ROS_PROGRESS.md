@@ -31,7 +31,7 @@
 
 - Created a colcon workspace at `~/robot_arm_ws`.
 - Created the `robot_arm_description` package using `ament_cmake`.
-- Added `urdf`, `meshes`, `launch`, and `rviz` resource directories.
+- Added `urdf`, `STL`, `launch`, and `rviz` resource directories.
 - Configured CMake to install the robot-description resources with the package.
 
 **What I learned**
@@ -92,9 +92,11 @@ LIBGL_ALWAYS_SOFTWARE=1 ros2 launch robot_arm_description display.launch.py
 
 ### Step 5 — Export the SolidWorks geometry
 
-- Export each rigid moving group as a separate STL or DAE mesh.
+- Exported `base_link.stl` as a meter-scaled binary STL and validated its dimensions and origin.
+- Added the base mesh to `robot_arm_description/STL` with a documented ROS frame correction.
+- Export each remaining rigid moving group as a separate STL mesh.
 - Use consistent units, orientation, and joint-centered reference frames.
-- Add the meshes to `robot_arm_description/meshes`.
+- Add and verify the meshes individually in `robot_arm_description/STL`.
 
 ### Step 6 — Match the ROS model to the CAD assembly
 
