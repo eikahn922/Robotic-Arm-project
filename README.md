@@ -10,6 +10,7 @@ This repository documents the mechanical design, engineering analysis, and ROS 2
 | ROS 2 progress | [ROS 2 Progress](ROS_PROGRESS.md) | Recruiter-friendly milestone log covering the completed setup, URDF/Xacro model, RViz result, lessons learned, and next steps. |
 | ROS 2 package | [robot_arm_description](ros2_ws/src/robot_arm_description) | Reproducible ROS 2 Jazzy package containing the placeholder 3-DOF URDF/Xacro model and visualization launch file. |
 | ROS 2 base mesh | [base_link.stl](ros2_ws/src/robot_arm_description/STL/base_link.stl) | Meter-scaled binary STL exported from SolidWorks for the fixed robot base. |
+| ROS 2 waist mesh | [waist_link.stl](ros2_ws/src/robot_arm_description/STL/waist_link.stl) | Meter-scaled binary STL exported from SolidWorks for the rotating waist link. |
 | Project workflow | [Robotic Arm Project Workflow](docs/project-workflow/Robotic-Arm-Project-Workflow.pdf) | Detailed engineering and implementation workflow for the project. |
 | Engineering analysis | [Torque and Servo Sizing Analysis](analysis/README.md) | Formula-driven shoulder and elbow torque calculations, assumptions, results, and validation plan. |
 | Calculation workbook | [3DOF Robotic Arm Torque & Servo Sizing Analysis](analysis/3DOF-Robotic-Arm-Torque-Servo-Sizing-Analysis.xlsx) | Downloadable workbook containing the full servo-sizing calculation model. |
@@ -62,7 +63,8 @@ This repository documents the mechanical design, engineering analysis, and ROS 2
 │           ├── package.xml
 │           ├── STL/
 │           │   ├── README.md
-│           │   └── base_link.stl
+│           │   ├── base_link.stl
+│           │   └── waist_link.stl
 │           ├── launch/
 │           ├── rviz/
 │           └── urdf/
