@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_arm">
-  <!-- Provisional dimensions used to verify the kinematic chain in RViz. -->
-  <xacro:property name="upper_arm_length" value="0.22"/>
+  <!-- CAD-derived upper-arm joint spacing; remaining dimensions are provisional. -->
+  <xacro:property name="upper_arm_length" value="0.12"/>
   <xacro:property name="forearm_length" value="0.18"/>
 
   <material name="dark_gray">
@@ -29,9 +29,12 @@
 
   <link name="waist_link">
     <visual>
-      <origin xyz="0 0 0.03" rpy="0 0 0"/>
+      <!-- SolidWorks exported the mesh Y-up; rotate it into ROS Z-up. -->
+      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
       <geometry>
-        <cylinder radius="0.055" length="0.06"/>
+        <mesh
+          filename="package://robot_arm_description/STL/waist_link.stl"
+          scale="1 1 1"/>
       </geometry>
       <material name="dark_gray"/>
     </visual>
@@ -47,9 +50,12 @@
 
   <link name="upper_arm_link">
     <visual>
-      <origin xyz="${upper_arm_length / 2} 0 0" rpy="0 0 0"/>
+      <!-- Mesh origin is the shoulder pivot; rotate its +Y span to link +X. -->
+      <origin xyz="0 0 0" rpy="0 0 -1.5708"/>
       <geometry>
-        <box size="${upper_arm_length} 0.05 0.05"/>
+        <mesh
+          filename="package://robot_arm_description/STL/upper_arm_link.stl"
+          scale="1 1 1"/>
       </geometry>
       <material name="blue"/>
     </visual>
