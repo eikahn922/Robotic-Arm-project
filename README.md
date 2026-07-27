@@ -1,11 +1,13 @@
 # Robotic Arm Project
 
-This repository documents the mechanical design and development of a robotic arm. It is organized so project planning and CAD work can be reviewed independently.
+This repository documents the mechanical design, engineering analysis, and ROS 2 development of a 3-DOF robotic arm. It is organized so each stage can be reviewed and reproduced independently.
 
 ## Project artifacts
 
 | Area | Artifact | Description |
 | --- | --- | --- |
+| ROS 2 progress | [ROS 2 Progress](ROS_PROGRESS.md) | Recruiter-friendly milestone log covering the completed setup, URDF/Xacro model, RViz result, lessons learned, and next steps. |
+| ROS 2 package | [robot_arm_description](ros2_ws/src/robot_arm_description) | Reproducible ROS 2 Jazzy package containing the placeholder 3-DOF URDF/Xacro model and visualization launch file. |
 | Project workflow | [Robotic Arm Project Workflow](docs/project-workflow/Robotic-Arm-Project-Workflow.pdf) | Planning and workflow documentation for the project. |
 | Engineering analysis | [Torque and Servo Sizing Analysis](analysis/README.md) | Formula-driven shoulder and elbow torque calculations, assumptions, results, and validation plan. |
 | Calculation workbook | [3DOF Robotic Arm Torque & Servo Sizing Analysis](analysis/3DOF-Robotic-Arm-Torque-Servo-Sizing-Analysis.xlsx) | Downloadable workbook containing the full servo-sizing calculation model. |
@@ -50,7 +52,21 @@ This repository documents the mechanical design and development of a robotic arm
 ├── analysis/
 │   ├── README.md
 │   └── 3DOF-Robotic-Arm-Torque-Servo-Sizing-Analysis.xlsx
+├── ros2_ws/
+│   ├── README.md
+│   └── src/
+│       └── robot_arm_description/
+│           ├── CMakeLists.txt
+│           ├── package.xml
+│           ├── launch/
+│           ├── meshes/
+│           ├── rviz/
+│           └── urdf/
+├── ROS_PROGRESS.md
 └── docs/
+    ├── images/
+    │   └── ros/
+    │       └── rviz-placeholder-arm.png
     └── project-workflow/
         └── Robotic-Arm-Project-Workflow.pdf
 ```
@@ -61,3 +77,5 @@ This repository documents the mechanical design and development of a robotic arm
 - `.SLDPRT` files are native SolidWorks part models.
 - `.pdf` files contain project documentation suitable for viewing without CAD software.
 - `.xlsx` files contain formula-driven engineering calculations and design inputs.
+- `.xacro` files define parameterized robot links, joints, origins, axes, and limits for ROS 2.
+- `.py` launch files start and configure the ROS 2 visualization nodes.
