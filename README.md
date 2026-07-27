@@ -6,9 +6,10 @@ This repository documents the mechanical design, engineering analysis, and ROS 2
 
 | Area | Artifact | Description |
 | --- | --- | --- |
+| Active timeline | [3-DOF Robotic Arm Project Timeline](docs/project-workflow/PROJECT_TIMELINE.md) | Daily development plan through August 18, including remote-work constraints and completion criteria. |
 | ROS 2 progress | [ROS 2 Progress](ROS_PROGRESS.md) | Recruiter-friendly milestone log covering the completed setup, URDF/Xacro model, RViz result, lessons learned, and next steps. |
 | ROS 2 package | [robot_arm_description](ros2_ws/src/robot_arm_description) | Reproducible ROS 2 Jazzy package containing the placeholder 3-DOF URDF/Xacro model and visualization launch file. |
-| Project workflow | [Robotic Arm Project Workflow](docs/project-workflow/Robotic-Arm-Project-Workflow.pdf) | Planning and workflow documentation for the project. |
+| Project workflow | [Robotic Arm Project Workflow](docs/project-workflow/Robotic-Arm-Project-Workflow.pdf) | Detailed engineering and implementation workflow for the project. |
 | Engineering analysis | [Torque and Servo Sizing Analysis](analysis/README.md) | Formula-driven shoulder and elbow torque calculations, assumptions, results, and validation plan. |
 | Calculation workbook | [3DOF Robotic Arm Torque & Servo Sizing Analysis](analysis/3DOF-Robotic-Arm-Torque-Servo-Sizing-Analysis.xlsx) | Downloadable workbook containing the full servo-sizing calculation model. |
 | Final assembly | [Robot Arm Final Assembly](cad/assembly/Robot-Arm-Final-Assembly.SLDASM) | Complete SolidWorks assembly for the robot arm. |
@@ -68,6 +69,7 @@ This repository documents the mechanical design, engineering analysis, and ROS 2
     │   └── ros/
     │       └── rviz-placeholder-arm.png
     └── project-workflow/
+        ├── PROJECT_TIMELINE.md
         └── Robotic-Arm-Project-Workflow.pdf
 ```
 
@@ -75,6 +77,7 @@ This repository documents the mechanical design, engineering analysis, and ROS 2
 
 - `.SLDASM` files are native SolidWorks assemblies that reference component documents.
 - `.SLDPRT` files are native SolidWorks part models.
+- `.md` files contain repository-readable project plans and documentation.
 - `.pdf` files contain project documentation suitable for viewing without CAD software.
 - `.xlsx` files contain formula-driven engineering calculations and design inputs.
 - `.xacro` files define parameterized robot links, joints, origins, axes, and limits for ROS 2.
