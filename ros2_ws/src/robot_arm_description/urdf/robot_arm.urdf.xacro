@@ -29,8 +29,8 @@
 
   <link name="waist_link">
     <visual>
-      <!-- SolidWorks exported the mesh Y-up; rotate it into ROS Z-up. -->
-      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <!-- Rotate the Y-up CAD mesh into ROS Z-up, then yaw it into the CAD assembly orientation. -->
+      <origin xyz="0 0 0" rpy="1.5708 0 1.5708"/>
       <geometry>
         <mesh
           filename="package://robot_arm_description/STL/waist_link.stl"
@@ -51,8 +51,8 @@
 
   <link name="upper_arm_link">
     <visual>
-      <!-- SolidWorks exports this mesh Y-up; rotate +Y to ROS +Z. -->
-      <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+      <!-- Rotate the CAD link so its long axis follows the ROS link-frame +X axis. -->
+      <origin xyz="0 0 0" rpy="0 0 -1.5708"/>
       <geometry>
         <mesh
           filename="package://robot_arm_description/STL/upper_arm_link.stl"
@@ -83,8 +83,8 @@
   <joint name="elbow_joint" type="revolute">
     <parent link="upper_arm_link"/>
     <child link="forearm_link"/>
-    <!-- The upper arm now extends along its link-frame +Z axis. -->
-    <origin xyz="0 0 ${upper_arm_length}" rpy="0 0 0"/>
+    <!-- The upper arm extends along its link-frame +X axis. -->
+    <origin xyz="${upper_arm_length} 0 0" rpy="0 0 0"/>
     <axis xyz="0 1 0"/>
     <limit lower="-2.0944" upper="2.0944" effort="10.0" velocity="1.0"/>
   </joint>
