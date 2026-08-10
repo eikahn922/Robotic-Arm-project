@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_arm">
-  <!-- Provisional dimensions used to verify the kinematic chain in RViz. -->
-  <xacro:property name="upper_arm_length" value="0.22"/>
+  <!-- CAD-derived upper-arm joint spacing; remaining dimensions are provisional. -->
+  <xacro:property name="upper_arm_length" value="0.12"/>
   <xacro:property name="forearm_length" value="0.18"/>
 
   <material name="dark_gray">
@@ -29,9 +29,12 @@
 
   <link name="waist_link">
     <visual>
-      <origin xyz="0 0 0.03" rpy="0 0 0"/>
+      <!-- Rotate the Y-up CAD mesh into ROS Z-up, then yaw it into the CAD assembly orientation. -->
+      <origin xyz="0 0 0" rpy="1.5708 0 1.5708"/>
       <geometry>
-        <cylinder radius="0.055" length="0.06"/>
+        <mesh
+          filename="package://robot_arm_description/STL/waist_link.stl"
+          scale="1 1 1"/>
       </geometry>
       <material name="dark_gray"/>
     </visual>
@@ -40,16 +43,20 @@
   <joint name="base_yaw_joint" type="revolute">
     <parent link="base_link"/>
     <child link="waist_link"/>
-    <origin xyz="0 0 0.08" rpy="0 0 0"/>
+    <!-- The CAD base is 56 mm tall, so place the waist directly on its top face. -->
+    <origin xyz="0 0 0.056" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
     <limit lower="-3.1416" upper="3.1416" effort="10.0" velocity="1.0"/>
   </joint>
 
   <link name="upper_arm_link">
     <visual>
-      <origin xyz="${upper_arm_length / 2} 0 0" rpy="0 0 0"/>
+      <!-- Rotate the CAD link so its long axis follows the ROS link-frame +X axis. -->
+      <origin xyz="0 0 0" rpy="0 0 -1.5708"/>
       <geometry>
-        <box size="${upper_arm_length} 0.05 0.05"/>
+        <mesh
+          filename="package://robot_arm_description/STL/upper_arm_link.stl"
+          scale="1 1 1"/>
       </geometry>
       <material name="blue"/>
     </visual>
@@ -76,6 +83,7 @@
   <joint name="elbow_joint" type="revolute">
     <parent link="upper_arm_link"/>
     <child link="forearm_link"/>
+    <!-- The upper arm extends along its link-frame +X axis. -->
     <origin xyz="${upper_arm_length} 0 0" rpy="0 0 0"/>
     <axis xyz="0 1 0"/>
     <limit lower="-2.0944" upper="2.0944" effort="10.0" velocity="1.0"/>

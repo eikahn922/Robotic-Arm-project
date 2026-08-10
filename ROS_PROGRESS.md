@@ -6,7 +6,9 @@
 - Created and validated a reusable ROS 2 robot-description package.
 - Modeled the arm as a five-link URDF/Xacro kinematic chain with three revolute joints.
 - Published the robot state and TF tree and rendered the placeholder arm successfully in RViz.
-- Current phase: replace the placeholder geometry with the actual SolidWorks link meshes and measured joint data.
+- Integrated the SolidWorks base, waist, and upper-arm meshes into the robot model.
+- Extracted a 120 mm shoulder-to-elbow spacing from the upper-arm CAD geometry.
+- Current phase: verify the three CAD meshes together in RViz, then integrate the forearm and gripper.
 
 ![Placeholder 3-DOF arm rendered in RViz](docs/images/ros/rviz-placeholder-arm.png)
 
@@ -92,16 +94,32 @@ LIBGL_ALWAYS_SOFTWARE=1 ros2 launch robot_arm_description display.launch.py
 
 ### Step 5 — Export the SolidWorks geometry
 
-- Exported `base_link.stl` as a meter-scaled binary STL and validated its dimensions and origin.
-- Added the base mesh to `robot_arm_description/STL` with a documented ROS frame correction.
-- Export each remaining rigid moving group as a separate STL mesh.
-- Use consistent units, orientation, and joint-centered reference frames.
-- Add and verify the meshes individually in `robot_arm_description/STL`.
+**Completed so far**
+
+- Exported `base_link.stl`, `waist_link.stl`, and `upper_arm_link.stl` as meter-scaled binary STL files.
+- Validated each file's dimensions, orientation, triangle count, and reference origin before integration.
+- Kept the upper-arm origin at the shoulder pivot and measured a 120 mm shoulder-to-elbow distance from the CAD geometry.
+- Added the three meshes to `robot_arm_description/STL` with documented ROS frame corrections.
+
+**What I learned**
+
+- How STL export units affect robot scale in RViz.
+- Why a joint-centered mesh origin makes URDF placement and motion easier to understand.
+- How to correct SolidWorks-to-ROS axis differences using a URDF `origin` rotation instead of modifying the CAD geometry.
+- How to validate mesh dimensions and orientation before debugging them in ROS.
+
+**Remaining**
+
+- Export the forearm and gripper as separate rigid moving groups.
+- Add and verify the remaining meshes individually in `robot_arm_description/STL`.
 
 ### Step 6 — Match the ROS model to the CAD assembly
 
-- Replace each placeholder shape with its corresponding SolidWorks mesh.
-- Measure and enter the exact joint origins and rotation axes.
+- Replaced the placeholder base, waist, and upper arm with their corresponding SolidWorks meshes.
+- Updated the provisional shoulder-to-elbow distance from 220 mm to the CAD-derived 120 mm value.
+- Verify the base, waist, and upper-arm meshes together in RViz.
+- Replace the forearm and gripper placeholders with their CAD meshes.
+- Measure and enter the remaining exact joint origins and rotation axes.
 - Replace provisional motion limits with the physical servo/link limits.
 - Confirm that each RViz joint moves in the correct direction without separating the assembly.
 
