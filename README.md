@@ -9,10 +9,11 @@ This repository documents the mechanical design, engineering analysis, and ROS 2
 | Active timeline | [3-DOF Robotic Arm Project Timeline](docs/project-workflow/PROJECT_TIMELINE.md) | Daily development plan through August 18, including remote-work constraints and completion criteria. |
 | Physical build | [Parts List and Purchase Tracker](physical-build/README.md) | Torque-driven actuator selection, power distribution, wiring, fasteners, camera plan, and purchase tracker. |
 | ROS 2 progress | [ROS 2 Progress](ROS_PROGRESS.md) | Recruiter-friendly milestone log covering the completed setup, URDF/Xacro model, RViz result, lessons learned, and next steps. |
-| ROS 2 package | [robot_arm_description](ros2_ws/src/robot_arm_description) | Reproducible ROS 2 Jazzy package containing CAD meshes for the base, waist, and upper arm, plus placeholder geometry for the remaining links. |
+| ROS 2 package | [robot_arm_description](ros2_ws/src/robot_arm_description) | Reproducible ROS 2 Jazzy package containing CAD meshes for the base, waist, upper arm, and forearm, plus placeholder gripper geometry. |
 | ROS 2 base mesh | [base_link.stl](ros2_ws/src/robot_arm_description/STL/base_link.stl) | Meter-scaled binary STL exported from SolidWorks for the fixed robot base. |
 | ROS 2 waist mesh | [waist_link.stl](ros2_ws/src/robot_arm_description/STL/waist_link.stl) | Meter-scaled binary STL exported from SolidWorks for the rotating waist link. |
 | ROS 2 upper-arm mesh | [upper_arm_link.stl](ros2_ws/src/robot_arm_description/STL/upper_arm_link.stl) | Meter-scaled binary STL with a shoulder-centered origin and 120 mm shoulder-to-elbow spacing. |
+| ROS 2 forearm mesh | [forearm_link.stl](ros2_ws/src/robot_arm_description/STL/forearm_link.stl) | Millimeter-scaled binary STL for Link #2, converted to meters and aligned to the STEP assembly in Xacro. |
 | Project workflow | [Robotic Arm Project Workflow](docs/project-workflow/Robotic-Arm-Project-Workflow.pdf) | Detailed engineering and implementation workflow for the project. |
 | Engineering analysis | [Torque and Servo Sizing Analysis](analysis/README.md) | Formula-driven shoulder and elbow torque calculations, assumptions, results, and validation plan. |
 | Calculation workbook | [3DOF Robotic Arm Torque & Servo Sizing Analysis](analysis/3DOF-Robotic-Arm-Torque-Servo-Sizing-Analysis.xlsx) | Downloadable workbook containing the full servo-sizing calculation model. |

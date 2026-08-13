@@ -51,8 +51,11 @@
 
   <link name="upper_arm_link">
     <visual>
-      <!-- Rotate the CAD link so its long axis follows the ROS link-frame +X axis. -->
-      <origin xyz="0 0 0" rpy="0 0 -1.5708"/>
+      <!--
+        STEP-derived mesh transform about the shoulder-servo shaft. The STL origin
+        is 120 mm from the shoulder pivot and 10.5 mm from the link center plane.
+      -->
+      <origin xyz="0.12 -0.0105 0" rpy="-1.5708 1.5708 0"/>
       <geometry>
         <mesh
           filename="package://robot_arm_description/STL/upper_arm_link.stl"
@@ -65,16 +68,24 @@
   <joint name="shoulder_joint" type="revolute">
     <parent link="waist_link"/>
     <child link="upper_arm_link"/>
-    <origin xyz="0 0 0.06" rpy="0 0 0"/>
+    <!-- Shoulder-servo shaft measured from RobotArmAssembly (1).STEP. -->
+    <origin xyz="-0.01391 -0.0065 0.04028" rpy="3.1416 -1.503064 3.1416"/>
     <axis xyz="0 1 0"/>
     <limit lower="-1.5708" upper="1.5708" effort="10.0" velocity="1.0"/>
   </joint>
 
   <link name="forearm_link">
     <visual>
-      <origin xyz="${forearm_length / 2} 0 0" rpy="0 0 0"/>
+      <!--
+        STEP-derived transform relative to the corrected upper-arm mesh.
+        This SolidWorks STL is millimeter-scaled, so convert it to meters.
+      -->
+      <origin xyz="0.011847 0.010500 -0.032668"
+              rpy="-1.570796 1.222885 0"/>
       <geometry>
-        <box size="${forearm_length} 0.045 0.045"/>
+        <mesh
+          filename="package://robot_arm_description/STL/forearm_link.stl"
+          scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="blue"/>
     </visual>
