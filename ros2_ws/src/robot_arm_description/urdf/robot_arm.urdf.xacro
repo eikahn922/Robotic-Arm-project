@@ -77,11 +77,13 @@
   <link name="forearm_link">
     <visual>
       <!--
-        STEP-derived transform relative to the corrected upper-arm mesh.
+        STEP-derived transform relative to the corrected upper-arm mesh. The
+        STL export shifted the Link #2 origin by +63, +19, +8 mm, so this
+        translation compensates for that shift after applying the CAD rotation.
         This SolidWorks STL is millimeter-scaled, so convert it to meters.
       -->
-      <origin xyz="0.011847 0.010500 -0.032668"
-              rpy="-1.570796 1.222885 0"/>
+      <origin xyz="0.008230 0.002500 0.033035"
+              rpy="-1.570796 1.222882 0"/>
       <geometry>
         <mesh
           filename="package://robot_arm_description/STL/forearm_link.stl"
