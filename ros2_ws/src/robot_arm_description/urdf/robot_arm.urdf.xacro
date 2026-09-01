@@ -9,7 +9,7 @@
     gives roughly 49 mm of fingertip separation. This is a provisional
     kinematic limit and should be replaced with the measured mechanical stop.
   -->
-  <xacro:property name="gripper_open" value="0.30"/>
+  <xacro:property name="gripper_open" value="0.75"/>
 
   <!--
     Mass properties.
@@ -59,6 +59,7 @@
                izz="${2.05376811e-07 * pla_density}"/>
     </inertial>
 
+
     <visual>
       <!-- SolidWorks exported the mesh Y-up; rotate it into ROS Z-up. -->
       <origin xyz="0 0 0" rpy="1.5708 0 0"/>
@@ -70,8 +71,6 @@
       <material name="dark_gray"/>
     </visual>
 
-    <!-- Collision: Cylinder: the base is genuinely round (40.5% of vertices lie in the outer 10% of
-         radius) and a cylinder is 21% tighter than the bounding box. -->
     <collision>
       <origin xyz="0 -1.02849746e-07 0.0280000009" rpy="3.6732051e-06 -0 0"/>
       <geometry>
@@ -89,6 +88,7 @@
                izz="${6.83909909e-08 * pla_density}"/>
     </inertial>
 
+
     <visual>
       <!-- Rotate the Y-up CAD mesh into ROS Z-up, then yaw it into the CAD assembly orientation. -->
       <origin xyz="0 0 0" rpy="1.5708 0 1.5708"/>
@@ -100,8 +100,6 @@
       <material name="dark_gray"/>
     </visual>
 
-    <!-- Collision: Box: the waist is NOT round - only 8% of vertices lie in the outer 10% of radius,
-         and a cylinder would be just 8% tighter than the box. Box chosen on that evidence. -->
     <collision>
       <origin xyz="1.35541332e-07 4.97871113e-13 0.0369000174" rpy="1.5708 -0 1.5708"/>
       <geometry>
@@ -128,6 +126,7 @@
                izz="${1.03835897e-07 * pla_density}"/>
     </inertial>
 
+
     <visual>
       <!--
         STEP-derived mesh transform about the shoulder-servo shaft. The STL origin
@@ -142,7 +141,6 @@
       <material name="blue"/>
     </visual>
 
-    <!-- Collision: Box sized to the mesh bounding box in its own frame. -->
     <collision>
       <origin xyz="0.0599999609 -2.2053394e-07 2.2039245e-07" rpy="1.57079265 1.57079265 3.14159265"/>
       <geometry>
@@ -169,6 +167,7 @@
                izz="${1.71605271e-08 * pla_density}"/>
     </inertial>
 
+
     <visual>
       <!--
         STEP-derived transform relative to the corrected upper-arm mesh. The
@@ -186,7 +185,6 @@
       <material name="blue"/>
     </visual>
 
-    <!-- Collision: Box sized to the mesh bounding box in its own frame. -->
     <collision>
       <origin xyz="0.0119116915 0.0160000062 -0.0331393786" rpy="-1.570796 1.222882 0"/>
       <geometry>
@@ -211,6 +209,19 @@
     STEP neutral pose exactly. The wrist frame's Y axis maps onto the forearm
     frame's Y axis, so the wrist pitches in the same plane as shoulder and elbow.
   -->
+  <!--
+    WRIST - two degrees of freedom.
+
+    wrist_roll_joint rotates the whole gripper about the forearm's own long axis.
+    The wrist frame's Z axis aligns with the forearm long axis to within a dot
+    product of 0.9999, which is what makes it the roll axis; the X and Y axes are
+    both perpendicular (0.011) and would only pitch.
+
+    wrist_pitch_joint then tilts the gripper up and down. Its axis is the gripper
+    base frame's X, which is exactly perpendicular to the roll axis (dot product
+    0.0000) and parallel to the jaw-opening direction, so the jaws stay level as
+    the gripper pitches. This joint used to be a fixed mount.
+  -->
   <link name="wrist_link">
     <inertial>
       <origin xyz="-2.42085612e-05 0.00594423645 0.0195846505" rpy="0 0 0"/>
@@ -223,14 +234,11 @@
     <visual name="wrist_link_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh
-          filename="package://robot_arm_description/STL/wrist_link.stl"
-          scale="0.001 0.001 0.001"/>
+        <mesh filename="package://robot_arm_description/STL/wrist_link.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="orange"/>
     </visual>
 
-    <!-- Collision: Box sized to the mesh bounding box in its own frame. -->
     <collision>
       <origin xyz="0 0 0.023" rpy="0 -0 0"/>
       <geometry>
@@ -239,16 +247,16 @@
     </collision>
   </link>
 
-  <joint name="wrist_joint" type="revolute">
+  <joint name="wrist_roll_joint" type="revolute">
     <parent link="forearm_link"/>
     <child link="wrist_link"/>
     <origin xyz="0.033726552 0.016000000 -0.093875834"
             rpy="-3.141592654 0.347914624 -3.141592654"/>
-    <axis xyz="0 1 0"/>
-    <limit lower="-1.5708" upper="1.5708" effort="10.0" velocity="1.0"/>
+    <axis xyz="0 0 1"/>
+    <!-- Provisional, not measured. -->
+    <limit lower="-3.1416" upper="3.1416" effort="5.0" velocity="1.0"/>
   </joint>
 
-  <!-- Gripper base, rigidly bolted to the wrist. -->
   <link name="gripper_base_link">
     <inertial>
       <origin xyz="0.00318308193 0.00755952549 -0.0130397199" rpy="0 0 0"/>
@@ -261,14 +269,11 @@
     <visual name="gripper_base_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://robot_arm_description/STL/gripper_base.stl"
-              scale="0.001 0.001 0.001"/>
+        <mesh filename="package://robot_arm_description/STL/gripper_base.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="orange"/>
     </visual>
 
-    <!-- Collision: Box sized to the mesh bounding box. Loose (7.2x the true volume) because the
-         part is an open forked bracket; a convex hull would be tighter if needed. -->
     <collision>
       <origin xyz="0.0116501546 0.0139999983 -0.0134966087" rpy="0 -0 0"/>
       <geometry>
@@ -277,145 +282,183 @@
     </collision>
   </link>
 
-  <joint name="gripper_base_joint" type="fixed">
+  <joint name="wrist_pitch_joint" type="revolute">
     <parent link="wrist_link"/>
     <child link="gripper_base_link"/>
     <origin xyz="0.034300380 0.013001510 0.047026012"
             rpy="-1.363351778 0 -1.570796327"/>
+    <axis xyz="1 0 0"/>
+    <!-- Provisional, not measured. -->
+    <limit lower="-1.5708" upper="1.5708" effort="5.0" velocity="1.0"/>
   </joint>
 
   <!--
-    Gripper sides.
+    GRIPPER - geared four-bar, modelled as a parallelogram rather than a rigid block.
 
-    The real mechanism is a geared four-bar closed loop: each gear drives a
-    connecting link that drives a finger. URDF cannot express a closed kinematic
-    chain, so each side is approximated as ONE rigid body - gear, connecting
-    link, and finger together - pivoting about its gear axis. The connecting
-    link and finger therefore do not articulate relative to their gear; this is
-    a visual and workspace approximation, not a mechanism simulation.
+    The real mechanism is a closed loop, which URDF cannot express. Instead each
+    side is split into a gear body and a finger, and the finger counter-rotates
+    against its gear through a mimic joint. That reproduces the parallelogram
+    behaviour: the finger swings out on the gear's arc while its orientation stays
+    fixed, so the jaw faces hold a constant relative angle instead of fanning open
+    like scissors.
 
-    Both gear frames share a common spin axis: the left and right local Z axes
-    are exactly anti-parallel in the gripper-base frame (dot product -1.000000),
-    which is the meshing-gear signature. Because the axes are anti-parallel,
-    driving both sides with the SAME signed angle produces true counter-rotation
-    in world space, so the mimic multiplier is +1, not -1.
+    The finger mimic multiplier is +1, not -1, because each finger frame's Z axis
+    is anti-parallel to its gear frame's Z. A +1 rotation in the finger frame is
+    therefore a -1 rotation about the gear axis, which is the cancellation needed.
+    Measured result: the angle between the two fingers stays at 30.8 degrees across
+    the whole range. The previous rigid-block model fanned from 30.8 to 80.4 degrees.
+
+    Gear axes: the left and right local Z axes are exactly anti-parallel in the
+    gripper-base frame (dot product -1.000000), the meshing-gear signature, so the
+    side mimic multiplier is +1 and the sides counter-rotate in world space.
+
+    Still an approximation: the connecting link is carried rigidly with its gear
+    rather than solving the true four-bar, so it is drawn in the right place at
+    zero but does not articulate exactly.
   -->
-  <link name="left_gripper_link">
+  <link name="left_gear_link">
     <inertial>
-      <origin xyz="0.021491332 0.00285382366 0.00278880384" rpy="0 0 0"/>
-      <mass value="${9.95847365e-06 * pla_density}"/>
-      <inertia ixx="${5.28681477e-10 * pla_density}" ixy="${-7.45464239e-10 * pla_density}" ixz="${6.95154139e-10 * pla_density}"
-               iyy="${6.77579585e-09 * pla_density}" iyz="${8.57273891e-11 * pla_density}"
-               izz="${6.9847835e-09 * pla_density}"/>
+      <origin xyz="0.00893746607 0.00149975966 0.00466186796" rpy="0 0 0"/>
+      <mass value="${7.25980177e-06 * pla_density}"/>
+      <inertia ixx="${3.27522228e-10 * pla_density}" ixy="${-1.55677746e-10 * pla_density}" ixz="${6.52164578e-11 * pla_density}"
+               iyy="${1.72950633e-09 * pla_density}" iyz="${1.77821085e-11 * pla_density}"
+               izz="${1.9344189e-09 * pla_density}"/>
     </inertial>
 
     <visual name="left_gear_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://robot_arm_description/STL/gripper_gear.stl"
-              scale="0.001 0.001 0.001"/>
+        <mesh filename="package://robot_arm_description/STL/gripper_gear.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark_gray"/>
     </visual>
-
     <visual name="left_connecting_link_visual">
-      <origin xyz="0.035504505 0.008743617 0.004000000"
-              rpy="-3.141592654 0 -0.009919099"/>
+      <origin xyz="0.035504505 0.008743617 0.004000000" rpy="-3.141592654 0 -0.009919099"/>
       <geometry>
-        <mesh filename="package://robot_arm_description/STL/gripper_connecting_link.stl"
-              scale="0.001 0.001 0.001"/>
+        <mesh filename="package://robot_arm_description/STL/gripper_connecting_link.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="blue"/>
     </visual>
+  </link>
+
+  <!-- Actuated side: the single user-facing gripper control. Zero is the STEP
+       neutral pose (closed, 2.65 mm between fingertips); 0.75 rad gives 51.8 mm,
+       sized to accept the 2 inch foam ball in analysis/. Provisional limit. -->
+  <joint name="gripper_joint" type="revolute">
+    <parent link="gripper_base_link"/>
+    <child link="left_gear_link"/>
+    <origin xyz="0.016900000 0 0" rpy="3.141592654 -1.570796327 -1.570796327"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="0.0" upper="${gripper_open}" effort="5.0" velocity="1.0"/>
+  </joint>
+
+  <link name="left_finger_link">
+    <inertial>
+      <origin xyz="0.0141037757 0.00359027469 0.00224999852" rpy="0 0 0"/>
+      <mass value="${2.69867188e-06 * pla_density}"/>
+      <inertia ixx="${6.39119051e-11 * pla_density}" ixy="${-1.48211276e-10 * pla_density}" ixz="${-5.16987883e-26 * pla_density}"
+               iyy="${7.24401326e-10 * pla_density}" iyz="${1.93870456e-26 * pla_density}"
+               izz="${7.79205213e-10 * pla_density}"/>
+    </inertial>
 
     <visual name="left_finger_visual">
-      <origin xyz="0.040876871 0.004294937 0"
-              rpy="-3.141592654 0 0.401119022"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://robot_arm_description/STL/gripper_finger.stl"
-              scale="0.001 0.001 0.001"/>
+        <mesh filename="package://robot_arm_description/STL/gripper_finger.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="orange"/>
     </visual>
 
-    <!-- Collision: Finger only. The gear and connecting link are internal mechanism that mesh and
-         overlap by design, so collision geometry there would create permanent contact. -->
     <collision>
-      <origin xyz="0.0576946969 0.00715333915 -0.00224999852" rpy="3.14159265 -0 0.401119022"/>
+      <origin xyz="0.0165989647 0.00393498421 0.00224999852" rpy="0 -0 0"/>
       <geometry>
         <box size="0.0651637421 0.0178700542 0.00450000009"/>
       </geometry>
     </collision>
   </link>
 
-  <!-- Actuated gripper side. This is the single user-facing gripper control. -->
-  <joint name="gripper_joint" type="revolute">
-    <parent link="gripper_base_link"/>
-    <child link="left_gripper_link"/>
-    <origin xyz="0.016900000 0 0"
-            rpy="3.141592654 -1.570796327 -1.570796327"/>
+  <!-- Parallelogram counter-rotation: +1 here is -1 about the gear axis, because
+       the finger frame Z is anti-parallel to the gear frame Z. Holds the jaw angle
+       constant at 30.8 degrees instead of fanning to 80.4. -->
+  <joint name="left_finger_joint" type="revolute">
+    <parent link="left_gear_link"/>
+    <child link="left_finger_link"/>
+    <origin xyz="0.040876871 0.004294937 0" rpy="-3.141592654 0 0.401119022"/>
     <axis xyz="0 0 1"/>
     <limit lower="0.0" upper="${gripper_open}" effort="5.0" velocity="1.0"/>
+    <mimic joint="gripper_joint" multiplier="1.0" offset="0.0"/>
   </joint>
 
-  <link name="right_gripper_link">
+  <link name="right_gear_link">
     <inertial>
-      <origin xyz="0.0211377991 0.00379476019 0.00721119918" rpy="0 0 0"/>
-      <mass value="${9.95847365e-06 * pla_density}"/>
-      <inertia ixx="${6.62256377e-10 * pla_density}" ixy="${-1.08780871e-09 * pla_density}" ixz="${-6.81478036e-10 * pla_density}"
-               iyy="${6.53666692e-09 * pla_density}" iyz="${-1.26132506e-10 * pla_density}"
-               izz="${6.87922951e-09 * pla_density}"/>
+      <origin xyz="0.00880575529 0.00172047236 0.00533813509" rpy="0 0 0"/>
+      <mass value="${7.25980177e-06 * pla_density}"/>
+      <inertia ixx="${3.53535757e-10 * pla_density}" ixy="${-1.9232035e-10 * pla_density}" ixz="${-6.2671125e-11 * pla_density}"
+               iyy="${1.67967579e-09 * pla_density}" iyz="${-2.20472731e-11 * pla_density}"
+               izz="${1.91060191e-09 * pla_density}"/>
     </inertial>
 
     <visual name="right_gear_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://robot_arm_description/STL/gripper_gear.stl"
-              scale="0.001 0.001 0.001"/>
+        <mesh filename="package://robot_arm_description/STL/gripper_gear.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="dark_gray"/>
     </visual>
-
     <visual name="right_connecting_link_visual">
-      <origin xyz="0.034336030 0.010701831 0.006000000"
-              rpy="0 0 -3.125893888"/>
+      <origin xyz="0.034336030 0.010701831 0.006000000" rpy="0 0 -3.125893888"/>
       <geometry>
-        <mesh filename="package://robot_arm_description/STL/gripper_connecting_link.stl"
-              scale="0.001 0.001 0.001"/>
+        <mesh filename="package://robot_arm_description/STL/gripper_connecting_link.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="blue"/>
     </visual>
+  </link>
+
+  <!-- Mirrored side. The gear Z axes are exactly anti-parallel, so +1 counter-rotates. -->
+  <joint name="right_gripper_joint" type="revolute">
+    <parent link="gripper_base_link"/>
+    <child link="right_gear_link"/>
+    <origin xyz="-0.009999717 -0.010000000 0" rpy="1.570796327 -1.444499427 3.141592654"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="0.0" upper="${gripper_open}" effort="5.0" velocity="1.0"/>
+    <mimic joint="gripper_joint" multiplier="1.0" offset="0.0"/>
+  </joint>
+
+  <link name="right_finger_link">
+    <inertial>
+      <origin xyz="0.0141037757 0.00359027469 0.00224999852" rpy="0 0 0"/>
+      <mass value="${2.69867188e-06 * pla_density}"/>
+      <inertia ixx="${6.39119051e-11 * pla_density}" ixy="${-1.48211276e-10 * pla_density}" ixz="${-5.16987883e-26 * pla_density}"
+               iyy="${7.24401326e-10 * pla_density}" iyz="${1.93870456e-26 * pla_density}"
+               izz="${7.79205213e-10 * pla_density}"/>
+    </inertial>
 
     <visual name="right_finger_visual">
-      <origin xyz="0.040292060 0.005472576 0.014500000"
-              rpy="-3.141592654 0 0.520722397"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://robot_arm_description/STL/gripper_finger.stl"
-              scale="0.001 0.001 0.001"/>
+        <mesh filename="package://robot_arm_description/STL/gripper_finger.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="orange"/>
     </visual>
 
-    <!-- Collision: Finger only, mirroring the left side. -->
     <collision>
-      <origin xyz="0.0566486799 0.0103172343 0.0122500015" rpy="3.14159265 -0 0.520722397"/>
+      <origin xyz="0.0165989647 0.00393498421 0.00224999852" rpy="0 -0 0"/>
       <geometry>
         <box size="0.0651637421 0.0178700542 0.00450000009"/>
       </geometry>
     </collision>
   </link>
 
-  <!--
-    Mirrored side. The mimic tag keeps this passive, so joint_state_publisher_gui
-    exposes exactly five controls: base yaw, shoulder, elbow, wrist, and gripper.
-  -->
-  <joint name="right_gripper_joint" type="revolute">
-    <parent link="gripper_base_link"/>
-    <child link="right_gripper_link"/>
-    <origin xyz="-0.009999717 -0.010000000 0"
-            rpy="1.570796327 -1.444499427 3.141592654"/>
+  <!-- Parallelogram counter-rotation: +1 here is -1 about the gear axis, because
+       the finger frame Z is anti-parallel to the gear frame Z. Holds the jaw angle
+       constant at 30.8 degrees instead of fanning to 80.4. -->
+  <joint name="right_finger_joint" type="revolute">
+    <parent link="right_gear_link"/>
+    <child link="right_finger_link"/>
+    <origin xyz="0.040292060 0.005472576 0.014500000" rpy="-3.141592654 0 0.520722397"/>
     <axis xyz="0 0 1"/>
     <limit lower="0.0" upper="${gripper_open}" effort="5.0" velocity="1.0"/>
     <mimic joint="gripper_joint" multiplier="1.0" offset="0.0"/>
   </joint>
+
 </robot>

@@ -38,7 +38,7 @@ Expand the Xacro and validate the URDF tree:
 ros2 run xacro xacro ~/robot_arm_ws/src/robot_arm_description/urdf/robot_arm.urdf.xacro -o /tmp/robot_arm.urdf && check_urdf /tmp/robot_arm.urdf
 ```
 
-`check_urdf` should report `base_link` as the root and list the eight links.
+`check_urdf` should report `base_link` as the root and list the ten links.
 
 Build the package:
 
@@ -55,10 +55,10 @@ LIBGL_ALWAYS_SOFTWARE=1 MESA_LOADER_DRIVER_OVERRIDE=llvmpipe QT_X11_NO_MITSHM=1 
 Confirm the transform chain reaches the moving gripper side:
 
 ```bash
-ros2 run tf2_ros tf2_echo base_link left_gripper_link
+ros2 run tf2_ros tf2_echo base_link left_finger_link
 ```
 
-Confirm the joint states, and that `right_gripper_joint` tracks `gripper_joint`:
+Confirm the joint states, and that all three mimic joints track `gripper_joint`:
 
 ```bash
 ros2 topic echo /joint_states

@@ -93,7 +93,7 @@ ros2 control list_controllers
 
 Expect `joint_state_broadcaster`, `arm_controller`, and `gripper_controller`, all `active`.
 
-List the command interfaces — there should be exactly five, and none for `right_gripper_joint`:
+List the command interfaces — there should be exactly six, and none for any mimic joint:
 
 ```bash
 ros2 control list_hardware_interfaces
@@ -104,19 +104,19 @@ ros2 control list_hardware_interfaces
 Shoulder to +0.5 rad:
 
 ```bash
-ros2 topic pub --once /arm_controller/joint_trajectory trajectory_msgs/msg/JointTrajectory "{joint_names: [base_yaw_joint, shoulder_joint, elbow_joint, wrist_joint], points: [{positions: [0.0, 0.5, 0.0, 0.0], time_from_start: {sec: 2}}]}"
+ros2 topic pub --once /arm_controller/joint_trajectory trajectory_msgs/msg/JointTrajectory "{joint_names: [base_yaw_joint, shoulder_joint, elbow_joint, wrist_roll_joint, wrist_pitch_joint], points: [{positions: [0.0, 0.5, 0.0, 0.0, 0.0], time_from_start: {sec: 2}}]}"
 ```
 
 Base yaw to +1.0 rad:
 
 ```bash
-ros2 topic pub --once /arm_controller/joint_trajectory trajectory_msgs/msg/JointTrajectory "{joint_names: [base_yaw_joint, shoulder_joint, elbow_joint, wrist_joint], points: [{positions: [1.0, 0.0, 0.0, 0.0], time_from_start: {sec: 2}}]}"
+ros2 topic pub --once /arm_controller/joint_trajectory trajectory_msgs/msg/JointTrajectory "{joint_names: [base_yaw_joint, shoulder_joint, elbow_joint, wrist_roll_joint, wrist_pitch_joint], points: [{positions: [1.0, 0.0, 0.0, 0.0, 0.0], time_from_start: {sec: 2}}]}"
 ```
 
 Open the gripper (0 is closed, 0.30 is open):
 
 ```bash
-ros2 topic pub --once /gripper_controller/joint_trajectory trajectory_msgs/msg/JointTrajectory "{joint_names: [gripper_joint], points: [{positions: [0.30], time_from_start: {sec: 1}}]}"
+ros2 topic pub --once /gripper_controller/joint_trajectory trajectory_msgs/msg/JointTrajectory "{joint_names: [gripper_joint], points: [{positions: [0.75], time_from_start: {sec: 1}}]}"
 ```
 
 Close it again:
@@ -133,14 +133,14 @@ While the gripper is part-open, both sides should report the same angle:
 ros2 topic echo /joint_states --once
 ```
 
-`gripper_joint` and `right_gripper_joint` should hold equal positions. If `right_gripper_joint` stays
+`gripper_joint`, `right_gripper_joint`, `left_finger_joint`, and `right_finger_joint` should all hold equal positions. If `right_gripper_joint` stays
 at zero while `gripper_joint` moves, mimic propagation is not working in the installed
 `ros2_control` version and the gripper will need an explicit second command interface instead.
 
 Confirm the transform chain reaches both fingers:
 
 ```bash
-ros2 run tf2_ros tf2_echo base_link left_gripper_link
+ros2 run tf2_ros tf2_echo base_link left_finger_link
 ```
 
 ## Unverified assumptions

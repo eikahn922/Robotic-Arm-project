@@ -5,11 +5,12 @@
 # ros2_control version.
 #
 # Joint grouping:
-#   arm_controller     base yaw, shoulder, elbow, wrist  (4 joints)
-#   gripper_controller gripper_joint                     (1 joint)
+#   arm_controller     base yaw, shoulder, elbow, wrist roll, wrist pitch (5)
+#   gripper_controller gripper_joint                                       (1)
 #
-# right_gripper_joint is absent on purpose - it is a URDF mimic joint and must
-# not have an independent command interface.
+# The three mimic joints - right_gripper_joint, left_finger_joint, and
+# right_finger_joint - are absent on purpose. A mimic joint must not have an
+# independent command interface.
 
 controller_manager:
   ros__parameters:
@@ -36,7 +37,8 @@ arm_controller:
       - base_yaw_joint
       - shoulder_joint
       - elbow_joint
-      - wrist_joint
+      - wrist_roll_joint
+      - wrist_pitch_joint
     command_interfaces:
       - position
     state_interfaces:
@@ -50,10 +52,11 @@ arm_controller:
     constraints:
       stopped_velocity_tolerance: 0.05
       goal_time: 2.0
-      base_yaw_joint: {trajectory: 0.20, goal: 0.05}
-      shoulder_joint: {trajectory: 0.20, goal: 0.05}
-      elbow_joint:    {trajectory: 0.20, goal: 0.05}
-      wrist_joint:    {trajectory: 0.20, goal: 0.05}
+      base_yaw_joint:    {trajectory: 0.20, goal: 0.05}
+      shoulder_joint:    {trajectory: 0.20, goal: 0.05}
+      elbow_joint:       {trajectory: 0.20, goal: 0.05}
+      wrist_roll_joint:  {trajectory: 0.20, goal: 0.05}
+      wrist_pitch_joint: {trajectory: 0.20, goal: 0.05}
 
 gripper_controller:
   ros__parameters:

@@ -30,18 +30,20 @@ Gazebo Sim and `ros2_control` are not implemented yet.
 
 ## Joint controls
 
-`joint_state_publisher_gui` exposes five sliders:
+`joint_state_publisher_gui` exposes six sliders:
 
 | Joint | Type | Axis | Limits (rad) | Basis |
 | --- | --- | --- | --- | --- |
 | `base_yaw_joint` | revolute | `0 0 1` | −3.1416 to 3.1416 | provisional |
 | `shoulder_joint` | revolute | `0 1 0` | −1.5708 to 1.5708 | provisional |
 | `elbow_joint` | revolute | `0 1 0` | −2.0944 to 2.0944 | provisional |
-| `wrist_joint` | revolute | `0 1 0` | −1.5708 to 1.5708 | provisional |
-| `gripper_joint` | revolute | `0 0 1` | 0 to 0.30 | provisional; 0 = closed |
+| `wrist_roll_joint` | revolute | `0 0 1` | −3.1416 to 3.1416 | provisional |
+| `wrist_pitch_joint` | revolute | `1 0 0` | −1.5708 to 1.5708 | provisional |
+| `gripper_joint` | revolute | `0 0 1` | 0 to 0.75 | provisional; 0 = closed, 0.75 = 51.8 mm |
 
-`right_gripper_joint` mirrors `gripper_joint` through a URDF `mimic` tag and is deliberately not an
-independent control.
+Three joints follow `gripper_joint` through URDF `mimic` tags and are deliberately not independent
+controls: `right_gripper_joint` (opposing side) and `left_finger_joint` / `right_finger_joint`
+(the parallelogram counter-rotation that keeps the jaw faces from fanning open).
 
 ## Link tree
 
@@ -50,8 +52,10 @@ base_link
 └── base_yaw_joint      (revolute)  → waist_link
     └── shoulder_joint  (revolute)  → upper_arm_link
         └── elbow_joint (revolute)  → forearm_link
-            └── wrist_joint (revolute) → wrist_link
-                └── gripper_base_joint (fixed) → gripper_base_link
-                    ├── gripper_joint       (revolute) → left_gripper_link
-                    └── right_gripper_joint (mimic)    → right_gripper_link
+            └── wrist_roll_joint  (revolute) → wrist_link
+                └── wrist_pitch_joint (revolute) → gripper_base_link
+                    ├── gripper_joint        (revolute) → left_gear_link
+                    │   └── left_finger_joint  (mimic)  → left_finger_link
+                    └── right_gripper_joint  (mimic)    → right_gear_link
+                        └── right_finger_joint (mimic)  → right_finger_link
 ```

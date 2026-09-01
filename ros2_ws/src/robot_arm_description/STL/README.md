@@ -34,9 +34,9 @@ Each mesh is now attached to a specific moving URDF link rather than to one comb
 | `forearm_link.stl` | `forearm_link` | 1 |
 | `wrist_link.stl` | `wrist_link` | 1 |
 | `gripper_base.stl` | `gripper_base_link` | 1 |
-| `gripper_gear.stl` | `left_gripper_link`, `right_gripper_link` | 2 |
-| `gripper_connecting_link.stl` | `left_gripper_link`, `right_gripper_link` | 2 |
-| `gripper_finger.stl` | `left_gripper_link`, `right_gripper_link` | 2 |
+| `gripper_gear.stl` | `left_gear_link`, `right_gear_link` | 2 |
+| `gripper_connecting_link.stl` | `left_gear_link`, `right_gear_link` | 2 |
+| `gripper_finger.stl` | `left_finger_link`, `right_finger_link` | 2 |
 
 The gear, connecting link, and finger meshes are each referenced twice on purpose: the two gripper
 sides are separate STEP occurrences of the same part.

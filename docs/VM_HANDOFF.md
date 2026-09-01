@@ -108,18 +108,20 @@ The "Zero" button in RViz resets the camera. It is not the Joint State Publisher
 
 ## Joint controls
 
-Five sliders are exposed:
+Six sliders are exposed:
 
 | Slider | Type | Notes |
 | --- | --- | --- |
 | `base_yaw_joint` | revolute | base rotation |
 | `shoulder_joint` | revolute | pitch |
 | `elbow_joint` | revolute | pitch |
-| `wrist_joint` | revolute | pitch, same plane as shoulder and elbow |
-| `gripper_joint` | revolute | 0 = closed (STEP neutral), 0.30 = open |
+| `wrist_roll_joint` | revolute | rolls the gripper about the forearm's long axis |
+| `wrist_pitch_joint` | revolute | tilts the gripper up and down |
+| `gripper_joint` | revolute | 0 = closed (STEP neutral), 0.75 = open (51.8 mm) |
 
-`right_gripper_joint` is a `mimic` joint and must **not** appear as its own slider. If it does, the
-mimic tag was lost — rebuild with `--cmake-clean-cache`.
+Three joints are `mimic` joints and must **not** appear as sliders: `right_gripper_joint`,
+`left_finger_joint`, and `right_finger_joint`. If any of them shows up, the mimic tags were lost —
+rebuild with `--cmake-clean-cache`.
 
 ## Diagnostics
 
@@ -127,10 +129,10 @@ Confirm the transform tree reaches the end of the arm. The old `wrist_gripper_li
 exists; use the new link names:
 
 ```bash
-ros2 run tf2_ros tf2_echo base_link left_gripper_link
+ros2 run tf2_ros tf2_echo base_link left_finger_link
 ```
 
-Other useful frames: `wrist_link`, `gripper_base_link`, `right_gripper_link`.
+Other useful frames: `wrist_link`, `gripper_base_link`, `left_gear_link`, `right_finger_link`.
 
 Confirm joint states are publishing:
 

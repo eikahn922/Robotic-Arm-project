@@ -9,8 +9,9 @@
 - Integrated the SolidWorks base, waist, upper-arm, forearm, wrist, and complete neutral-pose gripper geometry into the robot model.
 - Extracted a 120 mm shoulder-to-elbow spacing from the upper-arm CAD geometry.
 - Split the rigid `wrist_gripper_link` into `wrist_link`, `gripper_base_link`, and two moving gripper sides.
-- Added `wrist_joint` and `gripper_joint`, with the opposing gripper side driven by a mimic joint.
-- Added fitted collision geometry and mesh-derived inertial properties for all eight links.
+- Added `wrist_roll_joint`, `wrist_pitch_joint`, and `gripper_joint`, with three mimic joints driving
+  the opposing gripper side and the two-finger parallelogram.
+- Added fitted collision geometry and mesh-derived inertial properties for all ten links.
 - Added a `ros2_control` configuration with mock hardware, written but not yet run.
 - Current phase: run the model in the VM — verify the five joint controls in RViz, then the mock control stack.
 
@@ -135,37 +136,48 @@ LIBGL_ALWAYS_SOFTWARE=1 ros2 launch robot_arm_description display.launch.py
 
 **Completed**
 
-- Replaced the single fixed `wrist_gripper_link` with four links: `wrist_link`, `gripper_base_link`,
-  `left_gripper_link`, and `right_gripper_link`.
-- Added `wrist_joint` (revolute) between the forearm and the wrist, using the STEP wrist frame.
-- Added `gripper_joint` (revolute) as the single commanded gripper control, and
-  `right_gripper_joint` as a mirrored `mimic` joint so the GUI exposes exactly five sliders.
-- Kept every joint's zero position at the STEP neutral pose. A static check confirms the split model
-  reproduces the previous single-link placement of all twelve visuals to within 1.04 nanometres,
-  which is the rounding of the previous file's nine-decimal literals rather than a modelling error.
+- Replaced the single fixed `wrist_gripper_link` with six links: `wrist_link`, `gripper_base_link`,
+  `left_gear_link`, `left_finger_link`, `right_gear_link`, and `right_finger_link`.
+- Six commanded joints: base yaw, shoulder, elbow, `wrist_roll_joint`, `wrist_pitch_joint`, and
+  `gripper_joint`. Three mimic joints keep the rest passive, so the GUI shows exactly six sliders.
+- Every joint's zero position is the STEP neutral pose. A static check confirms the split model
+  reproduces the original single-link placement of all twelve visuals to within 1.04 nanometres,
+  which is the rounding of the previous file's nine-decimal literals, not a modelling error.
 
-**Engineering notes**
+**Wrist: two axes, corrected**
 
-- The wrist frame's Y axis maps exactly onto the forearm frame's Y axis, so `wrist_joint` pitches in
-  the same plane as the shoulder and elbow. Its axis is `0 1 0`.
-- Both gripper gear frames share one spin axis: their local Z axes are exactly anti-parallel in the
-  gripper-base frame (dot product −1.000000), which is the meshing-gear signature. Because they are
-  anti-parallel, driving both sides with the *same* signed angle counter-rotates them in world space,
-  so the mimic multiplier is `+1`, not `−1`.
-- The STEP neutral pose is the **closed** gripper: fingertip separation is 2.65 mm at zero. Positive
-  rotation opens the jaws, reaching roughly 49 mm of separation at the provisional 0.30 rad limit.
+- An earlier revision made the wrist a *pitch* joint. That was wrong. Testing each wrist-frame axis
+  against the forearm's long axis gives X 0.011, Y 0.011, **Z 0.9999** — so Z is the roll axis and
+  the others only pitch. `wrist_roll_joint` now rolls the gripper about the forearm's own axis.
+- The pitch belongs one joint further out, where a fixed mount used to be. `wrist_pitch_joint` uses
+  the gripper-base X axis, which is exactly perpendicular to the roll axis (dot product 0.0000) and
+  parallel to the jaw-opening direction, so the jaws stay level as the gripper tilts.
 
-**Known approximation**
+**Gripper: parallelogram, not scissors**
 
-- The real gripper is a geared four-bar closed loop. URDF cannot express a closed kinematic chain, so
-  each side is modelled as one rigid gear/connector/finger group pivoting about its gear axis. The
-  connector and finger do not articulate relative to their gear. This is a tree-safe visual and
-  workspace approximation, not a mechanism simulation.
+- The real mechanism is a geared four-bar closed loop, which URDF cannot express. Each side is now
+  split into a gear body and a finger, with the finger counter-rotating against its gear through a
+  mimic joint. The finger swings out along the gear's arc while its orientation stays fixed.
+- The finger mimic multiplier is **+1**, not −1, because each finger frame's Z axis is anti-parallel
+  to its gear frame's Z; a +1 rotation there is a −1 rotation about the gear axis.
+- Measured effect: the angle between the two fingers now holds constant at 30.1° across the entire
+  range (spread 0.00°). The previous rigid-block model fanned from 30.8° to 80.4° — visibly wrong in
+  RViz, and the reason the gripper appeared to grip in the wrong direction.
+- Both gear frames share one spin axis: their local Z axes are exactly anti-parallel in the
+  gripper-base frame (dot product −1.000000), the meshing-gear signature, so the side mimic
+  multiplier is +1 and the two sides counter-rotate in world space.
+
+**Remaining approximation**
+
+- The connecting link is carried rigidly with its gear rather than solved as a true four-bar. It sits
+  correctly at zero but does not articulate exactly. Fixing this properly needs a closed-loop solver
+  or a fitted mimic ratio measured from the CAD.
 
 **Provisional values, not measurements**
 
-- `wrist_joint` limits are ±1.5708 rad and `gripper_joint` limits are 0 to 0.30 rad. Both are
-  conservative placeholders chosen from the geometry, not measured mechanical stops.
+- `wrist_roll_joint` ±3.1416 rad, `wrist_pitch_joint` ±1.5708 rad, `gripper_joint` 0 to 0.75 rad.
+  The gripper upper limit is sized so the fingertips reach 51.8 mm, enough for the 2 inch foam ball
+  in `analysis/`. All three are conservative choices from geometry, not measured mechanical stops.
 
 ### Step 7 — Add engineering properties
 
@@ -189,9 +201,11 @@ LIBGL_ALWAYS_SOFTWARE=1 ros2 launch robot_arm_description display.launch.py
 **Known, expected overlap**
 
 - The left and right finger collision boxes intersect at the neutral pose, because the gripper is
-  closed there (2.65 mm between fingertips). Self-collision between `left_gripper_link` and
-  `right_gripper_link` must therefore be disabled downstream — via `self_collide` in Gazebo and the
+  closed there (2.65 mm between fingertips). Self-collision between `left_finger_link` and
+  `right_finger_link` must therefore be disabled downstream — via `self_collide` in Gazebo and the
   SRDF self-collision matrix in MoveIt. This is expected, not a defect.
+- `left_gear_link` and `right_gear_link` carry inertia but **no** collision geometry at all. The gears
+  and connecting links mesh and overlap by design, so collision there would create permanent contact.
 
 **Fit quality**
 

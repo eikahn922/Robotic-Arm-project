@@ -10,11 +10,11 @@
     hardware:=mock     mock_components/GenericSystem - no simulator required
     hardware:=gazebo   gz_ros2_control/GazeboSimSystem - requires Gazebo Sim
 
-  Only the five commanded joints appear here. right_gripper_joint is deliberately
-  absent: it is a URDF <mimic> joint, and ros2_control on Jazzy propagates mimic
-  joints from the URDF automatically. Declaring it here would give it an
-  independent command interface, which is exactly what a mimic joint must not
-  have.
+  Only the six commanded joints appear here. The three mimic joints -
+  right_gripper_joint, left_finger_joint, and right_finger_joint - are
+  deliberately absent: ros2_control on Jazzy propagates URDF <mimic> joints
+  automatically, and declaring them here would give each an independent command
+  interface, which is exactly what a mimic joint must not have.
 
   NOT VERIFIED AT RUNTIME. Plugin class names and the mimic-propagation
   behaviour must be confirmed in the Ubuntu VM against the installed
@@ -48,11 +48,12 @@
         </joint>
       </xacro:macro>
 
-      <xacro:arm_joint name="base_yaw_joint" min="-3.1416" max="3.1416"/>
-      <xacro:arm_joint name="shoulder_joint" min="-1.5708" max="1.5708"/>
-      <xacro:arm_joint name="elbow_joint"    min="-2.0944" max="2.0944"/>
-      <xacro:arm_joint name="wrist_joint"    min="-1.5708" max="1.5708"/>
-      <xacro:arm_joint name="gripper_joint"  min="0.0"     max="${gripper_open}"/>
+      <xacro:arm_joint name="base_yaw_joint"    min="-3.1416" max="3.1416"/>
+      <xacro:arm_joint name="shoulder_joint"    min="-1.5708" max="1.5708"/>
+      <xacro:arm_joint name="elbow_joint"       min="-2.0944" max="2.0944"/>
+      <xacro:arm_joint name="wrist_roll_joint"  min="-3.1416" max="3.1416"/>
+      <xacro:arm_joint name="wrist_pitch_joint" min="-1.5708" max="1.5708"/>
+      <xacro:arm_joint name="gripper_joint"     min="0.0"     max="${gripper_open}"/>
 
     </ros2_control>
   </xacro:macro>

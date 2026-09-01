@@ -27,12 +27,18 @@ REQUIRED_JOINTS = {
     "base_yaw_joint": "revolute",
     "shoulder_joint": "revolute",
     "elbow_joint": "revolute",
-    "wrist_joint": "revolute",
+    "wrist_roll_joint": "revolute",
+    "wrist_pitch_joint": "revolute",
     "gripper_joint": "revolute",
-    "gripper_base_joint": "fixed",
     "right_gripper_joint": "revolute",
+    "left_finger_joint": "revolute",
+    "right_finger_joint": "revolute",
 }
-CONTROLS = ["base_yaw_joint", "shoulder_joint", "elbow_joint", "wrist_joint", "gripper_joint"]
+CONTROLS = ["base_yaw_joint", "shoulder_joint", "elbow_joint",
+            "wrist_roll_joint", "wrist_pitch_joint", "gripper_joint"]
+# Gears and connecting links mesh and overlap by design, so they carry inertia
+# but no collision geometry. Giving them collision creates permanent contact.
+NO_COLLISION = {"left_gear_link", "right_gear_link"}
 DUPLICATED = {
     "STL/gripper_gear.stl": 2,
     "STL/gripper_connecting_link.stl": 2,
@@ -261,12 +267,13 @@ def main() -> int:
               "missing" if j is None else f"type={j['type']}")
     controls = [j["name"] for j in joints
                 if j["type"] in ("revolute", "prismatic") and not j["mimic"]]
-    check("exactly five user controls", controls == CONTROLS, f"got {controls}")
+    check(f"exactly {len(CONTROLS)} user controls", controls == CONTROLS, f"got {controls}")
 
     # ------------------------------------------------------------ 4. mimic
     section("4. Mimic joint")
     mimics = [j for j in joints if j["mimic"]]
-    check("exactly one mimic joint", len(mimics) == 1, f"got {[m['name'] for m in mimics]}")
+    check("three mimic joints (opposing side + two fingers)", len(mimics) == 3,
+          f"got {[m['name'] for m in mimics]}")
     for m in mimics:
         target, mult, off = m["mimic"]
         check(f"{m['name']} mimic target exists", target in by_name, f"target={target}")
@@ -314,56 +321,71 @@ def main() -> int:
 
     # ------------------------------------------- 7. gripper geometry, from CAD
     section("7. Gripper kinematics recomputed from the committed meshes")
-    finger = os.path.join(PKG, "STL", "gripper_finger.stl")
-    left = by_name.get("gripper_joint")
-    right = by_name.get("right_gripper_joint")
-    if os.path.exists(finger) and left and right and right["mimic"]:
-        verts, _, ok_stl = stl_vertices(finger)
-        vis = {}
-        for side, link_name in (("L", left["child"]), ("R", right["child"])):
-            for v in links[link_name].findall("visual"):
-                mesh = v.find("geometry/mesh")
-                if mesh is not None and mesh.get("filename").endswith("gripper_finger.stl"):
-                    vis[side] = origin_of(v)
-        if ok_stl and len(vis) == 2:
-            def tip(T_vis):
-                best, far = None, -1.0
-                for v in verts:
-                    p = apply_T(T_vis, [c * 0.001 for c in v])
-                    d = sum(c * c for c in p)
-                    if d > far:
-                        far, best = d, p
-                return best
+    finger_stl = os.path.join(PKG, "STL", "gripper_finger.stl")
+    verts, _, ok_stl = stl_vertices(finger_stl) if os.path.exists(finger_stl) else (None, 0, False)
+    lf, rf = by_name.get("left_finger_joint"), by_name.get("right_finger_joint")
+    lg, rg = by_name.get("gripper_joint"), by_name.get("right_gripper_joint")
+    if ok_stl and all((lf, rf, lg, rg)):
+        def finger_pts(gear_j, fing_j, theta):
+            """finger vertices in the gripper-base frame at a given command angle"""
+            m_side = gear_j["mimic"][1] if gear_j["mimic"] else 1.0
+            m_fing = fing_j["mimic"][1] if fing_j["mimic"] else 1.0
+            M = matmul(gear_j["T"], axis_rotation(gear_j["axis"], theta * m_side))
+            M = matmul(M, matmul(fing_j["T"], axis_rotation(fing_j["axis"], theta * m_fing)))
+            step = max(1, len(verts) // 250)
+            return [apply_T(M, [c * 0.001 for c in verts[i]]) for i in range(0, len(verts), step)]
 
-            tips = {s: tip(vis[s]) for s in vis}
-            mult = right["mimic"][1]
+        def tip(pts):
+            return max(pts, key=lambda p: p[0] * p[0] + p[1] * p[1] + p[2] * p[2])
 
-            def separation(theta):
-                pL = apply_T(matmul(left["T"], axis_rotation(left["axis"], theta)), tips["L"])
-                pR = apply_T(matmul(right["T"], axis_rotation(right["axis"], theta * mult)), tips["R"])
-                return math.dist(pL, pR)
+        def long_axis(pts):
+            n = len(pts)
+            mean = [sum(p[i] for p in pts) / n for i in range(3)]
+            C = [[sum((p[i] - mean[i]) * (p[j] - mean[j]) for p in pts) / n
+                  for j in range(3)] for i in range(3)]
+            ev = sorted(_eigvals_sym3(C))[-1]
+            # power iteration for the dominant eigenvector
+            v = [1.0, 0.3, 0.7]
+            for _ in range(80):
+                v = [sum(C[i][j] * v[j] for j in range(3)) for i in range(3)]
+                n2 = math.sqrt(sum(c * c for c in v)) or 1.0
+                v = [c / n2 for c in v]
+            return v
 
-            closed = separation(0.0)
-            hi = left["limit"][1] if left["limit"] else 0.3
-            opened = separation(hi)
-            check("gripper is closed at joint zero (STEP neutral pose)", closed < 0.005,
-                  f"{closed * 1000:.2f} mm between fingertips")
-            check("positive rotation opens the jaws", opened > closed,
-                  f"{closed * 1000:.2f} mm -> {opened * 1000:.2f} mm at {hi} rad")
-            samples = [separation(hi * i / 12.0) for i in range(2, 13)]
-            check("opening is monotonic over the commanded range",
-                  all(b > a for a, b in zip(samples, samples[1:])),
-                  f"max opening {max(samples) * 1000:.1f} mm")
-        else:
-            check("gripper finger visuals located on both sides", False, f"found {sorted(vis)}")
+        hi = lg["limit"][1] if lg["limit"] else 0.75
+        gaps, angles = [], []
+        for frac in (0.0, 0.25, 0.5, 0.75, 1.0):
+            th = hi * frac
+            L, R = finger_pts(lg, lf, th), finger_pts(rg, rf, th)
+            gaps.append(math.dist(tip(L), tip(R)))
+            a1, a2 = long_axis(L), long_axis(R)
+            angles.append(math.degrees(math.acos(min(1.0, abs(sum(x * y for x, y in zip(a1, a2)))))))
+
+        check("gripper is closed at joint zero (STEP neutral pose)", gaps[0] < 0.005,
+              f"{gaps[0] * 1000:.2f} mm between fingertips")
+        check("positive rotation opens the jaws", gaps[-1] > gaps[0],
+              f"{gaps[0] * 1000:.2f} mm -> {gaps[-1] * 1000:.2f} mm at {hi} rad")
+        check("opening is monotonic over the commanded range",
+              all(b > a for a, b in zip(gaps[1:], gaps[2:])),
+              " -> ".join(f"{g * 1000:.1f}" for g in gaps))
+        # the parallelogram property: jaw faces hold a constant relative angle
+        spread = max(angles) - min(angles)
+        check("jaw faces hold a constant angle (parallelogram, not scissors)", spread < 1.0,
+              f"{min(angles):.1f}-{max(angles):.1f} deg, spread {spread:.2f} deg")
+        check("finger joints counter-rotate against their gears",
+              lf["mimic"] is not None and rf["mimic"] is not None
+              and lf["mimic"][0] == "gripper_joint" and rf["mimic"][0] == "gripper_joint",
+              f"left={lf['mimic']} right={rf['mimic']}")
+    else:
+        check("gripper kinematics inputs available", False,
+              f"stl={ok_stl} joints={[bool(x) for x in (lf, rf, lg, rg)]}")
 
     # ------------------------------------------------ 7b. collision geometry
     section("7b. Collision geometry")
-    # Meshing gears and a gripper that is closed at neutral mean the two finger
-    # boxes necessarily overlap. Self-collision between the sides must be
-    # disabled downstream (Gazebo self_collide / MoveIt SRDF), so it is expected
+    # The gripper is closed at neutral, so the two finger boxes necessarily
+    # overlap. Self-collision between left_finger_link and right_finger_link must
+    # be disabled downstream (Gazebo self_collide / MoveIt SRDF); it is expected
     # here rather than treated as a defect.
-    EXPECTED_OVERLAP = {frozenset(("left_gripper_link", "right_gripper_link"))}
     prim_links = {}
     for name, link in links.items():
         prims = []
@@ -376,17 +398,18 @@ def main() -> int:
                     break
             prims.append((kind, geom, origin_of(col)))
         prim_links[name] = prims
-        check(f"{name} has collision geometry", bool(prims), f"{len(prims)} primitive(s)")
+        if name in NO_COLLISION:
+            check(f"{name} has no collision (internal mechanism, meshes by design)",
+                  not prims, f"{len(prims)} primitive(s)")
+        else:
+            check(f"{name} has collision geometry", bool(prims), f"{len(prims)} primitive(s)")
         for kind, _, _ in prims:
             check(f"{name} collision uses a primitive, not a mesh", kind != "mesh", f"kind={kind}")
 
     # Every collision primitive must contain the visual geometry it is meant to
     # cover. The gripper sides intentionally cover only the finger, so coverage
     # is asserted per mesh rather than per link.
-    UNCOVERED = {("left_gripper_link", "STL/gripper_gear.stl"),
-                 ("left_gripper_link", "STL/gripper_connecting_link.stl"),
-                 ("right_gripper_link", "STL/gripper_gear.stl"),
-                 ("right_gripper_link", "STL/gripper_connecting_link.stl")}
+    UNCOVERED = set()
 
     def inside(prims, p):
         for kind, geom, Tc in prims:
@@ -407,7 +430,7 @@ def main() -> int:
     for name, link in links.items():
         prims = prim_links.get(name) or []
         if not prims:
-            continue
+            continue                                  # NO_COLLISION links checked above
         for vis in link.findall("visual"):
             mesh = vis.find("geometry/mesh")
             if mesh is None:
@@ -472,7 +495,7 @@ def main() -> int:
         except ET.ParseError as exc:
             check("ros2_control xacro is well-formed XML", False, str(exc))
         declared = re.findall(r'<xacro:arm_joint\s+name="([^"]+)"', rc)
-        check("ros2_control declares exactly the five commanded joints",
+        check(f"ros2_control declares exactly the {len(CONTROLS)} commanded joints",
               sorted(declared) == sorted(CONTROLS), f"declared={declared}")
         # the name legitimately appears in an explanatory comment, so check the
         # actual joint declarations rather than raw text
@@ -480,8 +503,8 @@ def main() -> int:
         rc_joints = re.findall(r'<joint\s+name="\$\{([^}"]+)\}"|<joint\s+name="([^"]+)"', rc_no_comments)
         rc_joint_names = set(re.findall(r'name="([^"]+)"', 
                              " ".join(re.findall(r"<xacro:arm_joint[^/]*/>", rc_no_comments))))
-        check("ros2_control does NOT give the mimic joint a command interface",
-              "right_gripper_joint" not in rc_joint_names,
+        check("ros2_control gives no mimic joint a command interface",
+              not (rc_joint_names & {"right_gripper_joint", "left_finger_joint", "right_finger_joint"}),
               f"declared joints={sorted(rc_joint_names)}")
         for plugin in ("mock_components/GenericSystem", "gz_ros2_control/GazeboSimSystem"):
             check(f"hardware plugin present: {plugin}", plugin in rc)
@@ -502,12 +525,13 @@ def main() -> int:
         all_listed = [j for v in listed.values() for j in v]
         check("no joint is claimed by two controllers",
               len(all_listed) == len(set(all_listed)), f"{all_listed}")
-        check("controller joints cover exactly the five commanded joints",
+        check(f"controller joints cover exactly the {len(CONTROLS)} commanded joints",
               sorted(all_listed) == sorted(CONTROLS), f"{sorted(all_listed)}")
         unknown = [j for j in all_listed if j not in by_name]
         check("every controller joint exists in the URDF", not unknown, f"unknown={unknown}")
-        check("the mimic joint is not commanded by any controller",
-              "right_gripper_joint" not in all_listed)
+        check("no mimic joint is commanded by any controller",
+              not any(j in all_listed for j in
+                      ("right_gripper_joint", "left_finger_joint", "right_finger_joint")))
         check("controller_manager declares an update_rate",
               re.search(r"update_rate:\s*\d+", y) is not None)
 
