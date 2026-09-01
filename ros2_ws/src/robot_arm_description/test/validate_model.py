@@ -299,6 +299,78 @@ def main() -> int:
         else:
             check("gripper finger visuals located on both sides", False, f"found {sorted(vis)}")
 
+    # ------------------------------------------------ 7b. collision geometry
+    section("7b. Collision geometry")
+    # Meshing gears and a gripper that is closed at neutral mean the two finger
+    # boxes necessarily overlap. Self-collision between the sides must be
+    # disabled downstream (Gazebo self_collide / MoveIt SRDF), so it is expected
+    # here rather than treated as a defect.
+    EXPECTED_OVERLAP = {frozenset(("left_gripper_link", "right_gripper_link"))}
+    prim_links = {}
+    for name, link in links.items():
+        prims = []
+        for col in link.findall("collision"):
+            geom = col.find("geometry")
+            kind = None
+            for tag in ("box", "cylinder", "sphere", "mesh"):
+                if geom.find(tag) is not None:
+                    kind = tag
+                    break
+            prims.append((kind, geom, origin_of(col)))
+        prim_links[name] = prims
+        check(f"{name} has collision geometry", bool(prims), f"{len(prims)} primitive(s)")
+        for kind, _, _ in prims:
+            check(f"{name} collision uses a primitive, not a mesh", kind != "mesh", f"kind={kind}")
+
+    # Every collision primitive must contain the visual geometry it is meant to
+    # cover. The gripper sides intentionally cover only the finger, so coverage
+    # is asserted per mesh rather than per link.
+    UNCOVERED = {("left_gripper_link", "STL/gripper_gear.stl"),
+                 ("left_gripper_link", "STL/gripper_connecting_link.stl"),
+                 ("right_gripper_link", "STL/gripper_gear.stl"),
+                 ("right_gripper_link", "STL/gripper_connecting_link.stl")}
+
+    def inside(prims, p):
+        for kind, geom, Tc in prims:
+            R = [[Tc[i][j] for j in range(3)] for i in range(3)]
+            d = [p[i] - Tc[i][3] for i in range(3)]
+            loc = [sum(R[k][i] * d[k] for k in range(3)) for i in range(3)]
+            if kind == "box":
+                s = [float(x) / 2 for x in geom.find("box").get("size").split()]
+                if all(abs(loc[i]) <= s[i] + 1e-6 for i in range(3)):
+                    return True
+            elif kind == "cylinder":
+                cyl = geom.find("cylinder")
+                rad, length = float(cyl.get("radius")), float(cyl.get("length"))
+                if math.hypot(loc[0], loc[1]) <= rad + 1e-6 and abs(loc[2]) <= length / 2 + 1e-6:
+                    return True
+        return False
+
+    for name, link in links.items():
+        prims = prim_links.get(name) or []
+        if not prims:
+            continue
+        for vis in link.findall("visual"):
+            mesh = vis.find("geometry/mesh")
+            if mesh is None:
+                continue
+            rel = mesh.get("filename").replace("package://robot_arm_description/", "")
+            scale = float((mesh.get("scale") or "1 1 1").split()[0])
+            vv, _, ok_stl = stl_vertices(os.path.join(PKG, rel))
+            if not ok_stl:
+                continue
+            Tv = origin_of(vis)
+            step = max(1, len(vv) // 400)
+            pts = [apply_T(Tv, [c * scale for c in vv[i]]) for i in range(0, len(vv), step)]
+            frac = sum(1 for p in pts if inside(prims, p)) / len(pts)
+            short = rel.split("/")[-1]
+            if (name, rel) in UNCOVERED:
+                check(f"{name}/{short} is intentionally uncovered (internal mechanism)",
+                      frac < 0.5, f"{frac * 100:.1f}% covered")
+            else:
+                check(f"{name}/{short} fully inside its collision primitive", frac >= 0.999,
+                      f"{frac * 100:.1f}% of {len(pts)} sampled vertices")
+
     # ------------------------------------------------- 8. repository hygiene
     section("8. Repository hygiene")
     try:

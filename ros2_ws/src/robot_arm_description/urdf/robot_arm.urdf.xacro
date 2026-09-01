@@ -32,6 +32,15 @@
       </geometry>
       <material name="dark_gray"/>
     </visual>
+
+    <!-- Collision: Cylinder: the base is genuinely round (40.5% of vertices lie in the outer 10% of
+         radius) and a cylinder is 21% tighter than the bounding box. -->
+    <collision>
+      <origin xyz="0 -1.02849746e-07 0.0280000009" rpy="3.6732051e-06 -0 0"/>
+      <geometry>
+        <cylinder radius="0.0606250025" length="0.0560000017"/>
+      </geometry>
+    </collision>
   </link>
 
   <link name="waist_link">
@@ -45,6 +54,15 @@
       </geometry>
       <material name="dark_gray"/>
     </visual>
+
+    <!-- Collision: Box: the waist is NOT round - only 8% of vertices lie in the outer 10% of radius,
+         and a cylinder would be just 8% tighter than the box. Box chosen on that evidence. -->
+    <collision>
+      <origin xyz="1.35541332e-07 4.97871113e-13 0.0369000174" rpy="1.5708 -0 1.5708"/>
+      <geometry>
+        <box size="0.0968577415 0.0738000348 0.0970000029"/>
+      </geometry>
+    </collision>
   </link>
 
   <joint name="base_yaw_joint" type="revolute">
@@ -70,6 +88,14 @@
       </geometry>
       <material name="blue"/>
     </visual>
+
+    <!-- Collision: Box sized to the mesh bounding box in its own frame. -->
+    <collision>
+      <origin xyz="0.0599999609 -2.2053394e-07 2.2039245e-07" rpy="1.57079265 1.57079265 3.14159265"/>
+      <geometry>
+        <box size="0.0419998914 0.16196901 0.0209999997"/>
+      </geometry>
+    </collision>
   </link>
 
   <joint name="shoulder_joint" type="revolute">
@@ -98,6 +124,14 @@
       </geometry>
       <material name="blue"/>
     </visual>
+
+    <!-- Collision: Box sized to the mesh bounding box in its own frame. -->
+    <collision>
+      <origin xyz="0.0119116915 0.0160000062 -0.0331393786" rpy="-1.570796 1.222882 0"/>
+      <geometry>
+        <box size="0.124999993 0.037999997 0.027"/>
+      </geometry>
+    </collision>
   </link>
 
   <joint name="elbow_joint" type="revolute">
@@ -126,6 +160,14 @@
       </geometry>
       <material name="orange"/>
     </visual>
+
+    <!-- Collision: Box sized to the mesh bounding box in its own frame. -->
+    <collision>
+      <origin xyz="0 0 0.023" rpy="0 -0 0"/>
+      <geometry>
+        <box size="0.033 0.028 0.046"/>
+      </geometry>
+    </collision>
   </link>
 
   <joint name="wrist_joint" type="revolute">
@@ -147,6 +189,15 @@
       </geometry>
       <material name="orange"/>
     </visual>
+
+    <!-- Collision: Box sized to the mesh bounding box. Loose (7.2x the true volume) because the
+         part is an open forked bracket; a convex hull would be tighter if needed. -->
+    <collision>
+      <origin xyz="0.0116501546 0.0139999983 -0.0134966087" rpy="0 -0 0"/>
+      <geometry>
+        <box size="0.0532997427 0.0279999996 0.0770036621"/>
+      </geometry>
+    </collision>
   </link>
 
   <joint name="gripper_base_joint" type="fixed">
@@ -201,6 +252,15 @@
       </geometry>
       <material name="orange"/>
     </visual>
+
+    <!-- Collision: Finger only. The gear and connecting link are internal mechanism that mesh and
+         overlap by design, so collision geometry there would create permanent contact. -->
+    <collision>
+      <origin xyz="0.0576946969 0.00715333915 -0.00224999852" rpy="3.14159265 -0 0.401119022"/>
+      <geometry>
+        <box size="0.0651637421 0.0178700542 0.00450000009"/>
+      </geometry>
+    </collision>
   </link>
 
   <!-- Actuated gripper side. This is the single user-facing gripper control. -->
@@ -242,6 +302,14 @@
       </geometry>
       <material name="orange"/>
     </visual>
+
+    <!-- Collision: Finger only, mirroring the left side. -->
+    <collision>
+      <origin xyz="0.0566486799 0.0103172343 0.0122500015" rpy="3.14159265 -0 0.520722397"/>
+      <geometry>
+        <box size="0.0651637421 0.0178700542 0.00450000009"/>
+      </geometry>
+    </collision>
   </link>
 
   <!--

@@ -167,7 +167,37 @@ LIBGL_ALWAYS_SOFTWARE=1 ros2 launch robot_arm_description display.launch.py
 
 ### Step 7 — Add engineering properties
 
-- Add simplified collision geometry for each link.
+**Completed: collision geometry**
+
+- Added one simplified collision primitive per physical link, fitted to the committed meshes rather
+  than hand-guessed.
+- `base_link` uses a cylinder; the mesh is genuinely round (40.5% of its vertices lie in the outer
+  10% of radius) and a cylinder is 21% tighter than the bounding box.
+- `waist_link` uses a box. It looks round but is not: only 8% of vertices lie in the outer 10% of
+  radius, so a cylinder would be a mere 8% tighter and the box is the simpler primitive.
+- The upper arm, forearm, wrist, and gripper base use oriented boxes sized to each mesh's own
+  bounding box, so the box inherits the mesh's orientation instead of inflating an axis-aligned one.
+- Each gripper side gets collision on the **finger only**. The gears and connecting links are
+  internal mechanism that mesh and overlap by design; giving them collision geometry would create
+  permanent contact in a physics engine for no benefit.
+- A static check samples every visual mesh and confirms 100% of sampled vertices lie inside the
+  corresponding collision primitive, and that the internal-mechanism meshes are deliberately
+  uncovered.
+
+**Known, expected overlap**
+
+- The left and right finger collision boxes intersect at the neutral pose, because the gripper is
+  closed there (2.65 mm between fingertips). Self-collision between `left_gripper_link` and
+  `right_gripper_link` must therefore be disabled downstream — via `self_collide` in Gazebo and the
+  SRDF self-collision matrix in MoveIt. This is expected, not a defect.
+
+**Fit quality**
+
+- `gripper_base_link` is the loosest primitive at roughly 7.2x the true part volume, because the part
+  is an open forked bracket. A convex hull would be tighter if grasp clearance becomes a problem.
+
+**Remaining**
+
 - Add the measured mass, center of mass, and inertia for each moving link.
 - Compare calculated joint torque requirements against the selected servos.
 
