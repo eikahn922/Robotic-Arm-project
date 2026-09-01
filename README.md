@@ -11,6 +11,8 @@ This repository documents the mechanical design, engineering analysis, and ROS 2
 | ROS 2 progress | [ROS 2 Progress](ROS_PROGRESS.md) | Recruiter-friendly milestone log covering the completed setup, URDF/Xacro model, RViz result, lessons learned, and next steps. |
 | ROS 2 package | [robot_arm_description](ros2_ws/src/robot_arm_description) | Reproducible ROS 2 Jazzy package containing the complete CAD geometry — base, waist, upper arm, forearm, wrist, and all seven gripper part instances — with five commanded joints and a mimic gripper side. |
 | Ubuntu VM guide | [VM Handoff](docs/VM_HANDOFF.md) | Exact Ubuntu 24.04 ARM64 commands to update, build, launch, and troubleshoot the RViz visualization. |
+| Control & simulation | [Simulation Guide](docs/SIMULATION.md) | Per-layer status, `ros2_control` test commands, and the list of assumptions not yet verified at runtime. |
+| Model validation | [validate_model.py](ros2_ws/src/robot_arm_description/test/validate_model.py) | Dependency-free static validation of the URDF tree, meshes, collision, inertials, and controller configuration. |
 | ROS 2 base mesh | [base_link.stl](ros2_ws/src/robot_arm_description/STL/base_link.stl) | Meter-scaled binary STL exported from SolidWorks for the fixed robot base. |
 | ROS 2 waist mesh | [waist_link.stl](ros2_ws/src/robot_arm_description/STL/waist_link.stl) | Meter-scaled binary STL exported from SolidWorks for the rotating waist link. |
 | ROS 2 upper-arm mesh | [upper_arm_link.stl](ros2_ws/src/robot_arm_description/STL/upper_arm_link.stl) | Meter-scaled binary STL with a shoulder-centered origin and 120 mm shoulder-to-elbow spacing. |

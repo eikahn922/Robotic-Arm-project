@@ -10,7 +10,9 @@
 - Extracted a 120 mm shoulder-to-elbow spacing from the upper-arm CAD geometry.
 - Split the rigid `wrist_gripper_link` into `wrist_link`, `gripper_base_link`, and two moving gripper sides.
 - Added `wrist_joint` and `gripper_joint`, with the opposing gripper side driven by a mimic joint.
-- Current phase: verify the five joint controls in RViz, then add collision and inertial properties.
+- Added fitted collision geometry and mesh-derived inertial properties for all eight links.
+- Added a `ros2_control` configuration with mock hardware, written but not yet run.
+- Current phase: run the model in the VM — verify the five joint controls in RViz, then the mock control stack.
 
 > **Terminology.** This is an RViz *kinematic visualization*, not a physics simulation. It runs
 > `robot_state_publisher`, `joint_state_publisher_gui`, and RViz. Gazebo Sim and `ros2_control` are
@@ -226,6 +228,29 @@ LIBGL_ALWAYS_SOFTWARE=1 ros2 launch robot_arm_description display.launch.py
 
 ### Step 8 — Add control and simulation
 
-- Create a `ros2_control` configuration for the three arm servos and gripper.
-- Test joint commands in simulation before connecting hardware.
+**Completed: `ros2_control` configuration (written, not yet run)**
+
+- Added a `ros2_control` hardware interface, controller YAML, and a separate control launch path.
+  `robot_arm.urdf.xacro` stays free of control tags; `robot_arm_control.urdf.xacro` layers the
+  interface on top, so a broken controller cannot break the working visualization.
+- Mock hardware (`mock_components/GenericSystem`) is the default, so the whole control stack can be
+  exercised with no physics engine and no GPU. On an ARM64 VM with software rendering that is far
+  cheaper than debugging controllers and Gazebo simultaneously.
+- Controllers: `joint_state_broadcaster`, an `arm_controller` over base yaw/shoulder/elbow/wrist, and
+  a `gripper_controller` over `gripper_joint`. The arm controller starts only after the broadcaster
+  exits successfully, so joint states exist before any trajectory is commanded.
+- `right_gripper_joint` is deliberately absent from both the `ros2_control` block and the controller
+  YAML, because a mimic joint must not have an independent command interface.
+
+> **Not verified.** No controller has been loaded, no plugin name confirmed, no gain tuned. See
+> [docs/SIMULATION.md](docs/SIMULATION.md) for the CLI test commands and the explicit list of
+> unverified assumptions — the most fragile being that `ros2_control` propagates URDF `mimic` joints
+> automatically.
+
+**Remaining**
+
+- Run the mock-hardware control stack in the VM and confirm the mimic side follows.
+- Add Gazebo Sim: world, ground plane, spawn, `gz_ros2_control`, and a pickup target.
+- Add MoveIt 2 inverse kinematics, an RGB-D camera, OpenCV ball detection, and autonomous
+  pick-and-place.
 - Add a microcontroller interface for servo commands and joint feedback.
