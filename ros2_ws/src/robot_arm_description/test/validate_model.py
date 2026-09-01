@@ -89,6 +89,30 @@ def axis_rotation(axis, theta):
     return [R[i] + [0.0] for i in range(3)] + [[0.0, 0.0, 0.0, 1.0]]
 
 
+def parse_yaml_lists(text):
+    """Return {block_name: [joint, ...]} for every `joints:` list in the file."""
+    out, current, collecting = {}, None, None
+    for raw in text.splitlines():
+        line = raw.split("#", 1)[0].rstrip()
+        if not line.strip():
+            continue
+        indent = len(line) - len(line.lstrip())
+        body = line.strip()
+        if indent == 0 and body.endswith(":"):
+            current, collecting = body[:-1], None
+            continue
+        if body.rstrip(":") == "joints" and body.endswith(":"):
+            collecting = []
+            out[current] = collecting
+            continue
+        if collecting is not None:
+            if body.startswith("- "):
+                collecting.append(body[2:].strip())
+            else:
+                collecting = None
+    return out
+
+
 def _eigvals_sym3(M):
     """Closed-form eigenvalues of a symmetric 3x3 matrix (no numpy)."""
     p1 = M[0][1] ** 2 + M[0][2] ** 2 + M[1][2] ** 2
@@ -433,6 +457,59 @@ def main() -> int:
         check(f"{name} principal moments satisfy the triangle inequality",
               p[0] + p[1] >= p[2] * (1 - 1e-9),
               f"{p[0]:.3e} + {p[1]:.3e} >= {p[2]:.3e}")
+
+    # --------------------------------------------------- 9. ros2_control setup
+    section("9. ros2_control configuration")
+    rc_xacro = os.path.join(PKG, "urdf", "robot_arm.ros2_control.xacro")
+    ctl_xacro = os.path.join(PKG, "urdf", "robot_arm_control.urdf.xacro")
+    yaml_path = os.path.join(PKG, "config", "controllers.yaml")
+
+    if check("ros2_control xacro exists", os.path.exists(rc_xacro)):
+        rc = open(rc_xacro).read()
+        try:
+            ET.fromstring(rc)
+            check("ros2_control xacro is well-formed XML", True)
+        except ET.ParseError as exc:
+            check("ros2_control xacro is well-formed XML", False, str(exc))
+        declared = re.findall(r'<xacro:arm_joint\s+name="([^"]+)"', rc)
+        check("ros2_control declares exactly the five commanded joints",
+              sorted(declared) == sorted(CONTROLS), f"declared={declared}")
+        # the name legitimately appears in an explanatory comment, so check the
+        # actual joint declarations rather than raw text
+        rc_no_comments = re.sub(r"<!--.*?-->", "", rc, flags=re.S)
+        rc_joints = re.findall(r'<joint\s+name="\$\{([^}"]+)\}"|<joint\s+name="([^"]+)"', rc_no_comments)
+        rc_joint_names = set(re.findall(r'name="([^"]+)"', 
+                             " ".join(re.findall(r"<xacro:arm_joint[^/]*/>", rc_no_comments))))
+        check("ros2_control does NOT give the mimic joint a command interface",
+              "right_gripper_joint" not in rc_joint_names,
+              f"declared joints={sorted(rc_joint_names)}")
+        for plugin in ("mock_components/GenericSystem", "gz_ros2_control/GazeboSimSystem"):
+            check(f"hardware plugin present: {plugin}", plugin in rc)
+
+    if check("control variant xacro exists", os.path.exists(ctl_xacro)):
+        cv = open(ctl_xacro).read()
+        check("control variant includes the base model",
+              "robot_arm.urdf.xacro" in cv)
+        check("control variant includes the ros2_control macro",
+              "robot_arm.ros2_control.xacro" in cv)
+
+    if check("controllers.yaml exists", os.path.exists(yaml_path)):
+        y = open(yaml_path).read()
+        # Structural subset check - PyYAML is not guaranteed to be installed.
+        listed = parse_yaml_lists(y)
+        check("controllers.yaml declares controller joint lists", bool(listed),
+              f"{ {k: len(v) for k, v in listed.items()} }")
+        all_listed = [j for v in listed.values() for j in v]
+        check("no joint is claimed by two controllers",
+              len(all_listed) == len(set(all_listed)), f"{all_listed}")
+        check("controller joints cover exactly the five commanded joints",
+              sorted(all_listed) == sorted(CONTROLS), f"{sorted(all_listed)}")
+        unknown = [j for j in all_listed if j not in by_name]
+        check("every controller joint exists in the URDF", not unknown, f"unknown={unknown}")
+        check("the mimic joint is not commanded by any controller",
+              "right_gripper_joint" not in all_listed)
+        check("controller_manager declares an update_rate",
+              re.search(r"update_rate:\s*\d+", y) is not None)
 
     # ------------------------------------------------- 8. repository hygiene
     section("8. Repository hygiene")

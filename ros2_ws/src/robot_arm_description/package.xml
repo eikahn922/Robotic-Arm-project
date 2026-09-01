@@ -2,7 +2,7 @@
 <package format="3">
   <name>robot_arm_description</name>
   <version>0.1.0</version>
-  <description>ROS 2 description and visualization package for a 3-DOF robotic arm.</description>
+  <description>ROS 2 description, visualization, and ros2_control configuration for a robotic arm with three arm joints, a wrist, and a mimic-driven gripper.</description>
 
   <maintainer email="eikahn@andrew.cmu.edu">Ezra Kahn</maintainer>
   <license>MIT</license>
@@ -16,6 +16,13 @@
   <exec_depend>rviz2</exec_depend>
   <exec_depend>urdf_launch</exec_depend>
   <exec_depend>xacro</exec_depend>
+
+  <!-- ros2_control: needed by control.launch.py, not by the RViz visualization. -->
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>ros2_control</exec_depend>
+  <exec_depend>ros2_controllers</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

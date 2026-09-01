@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<!--
+  ros2_control description for the robot arm.
+
+  Included from robot_arm.urdf.xacro only when the `hardware` xacro argument is
+  something other than "none", so the plain RViz visualization path stays free of
+  control tags.
+
+    hardware:=none     visualization only (default)
+    hardware:=mock     mock_components/GenericSystem - no simulator required
+    hardware:=gazebo   gz_ros2_control/GazeboSimSystem - requires Gazebo Sim
+
+  Only the five commanded joints appear here. right_gripper_joint is deliberately
+  absent: it is a URDF <mimic> joint, and ros2_control on Jazzy propagates mimic
+  joints from the URDF automatically. Declaring it here would give it an
+  independent command interface, which is exactly what a mimic joint must not
+  have.
+
+  NOT VERIFIED AT RUNTIME. Plugin class names and the mimic-propagation
+  behaviour must be confirmed in the Ubuntu VM against the installed
+  ros2_control version - see docs/SIMULATION.md.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="robot_arm_ros2_control" params="hardware">
+    <ros2_control name="RobotArmSystem" type="system">
+
+      <hardware>
+        <xacro:if value="${hardware == 'mock'}">
+          <plugin>mock_components/GenericSystem</plugin>
+          <!-- Mirror commands straight back as state, so the stack runs with no simulator. -->
+          <param name="mock_sensor_commands">false</param>
+          <param name="state_following_offset">0.0</param>
+        </xacro:if>
+        <xacro:if value="${hardware == 'gazebo'}">
+          <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+        </xacro:if>
+      </hardware>
+
+      <xacro:macro name="arm_joint" params="name min max">
+        <joint name="${name}">
+          <command_interface name="position">
+            <param name="min">${min}</param>
+            <param name="max">${max}</param>
+          </command_interface>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+        </joint>
+      </xacro:macro>
+
+      <xacro:arm_joint name="base_yaw_joint" min="-3.1416" max="3.1416"/>
+      <xacro:arm_joint name="shoulder_joint" min="-1.5708" max="1.5708"/>
+      <xacro:arm_joint name="elbow_joint"    min="-2.0944" max="2.0944"/>
+      <xacro:arm_joint name="wrist_joint"    min="-1.5708" max="1.5708"/>
+      <xacro:arm_joint name="gripper_joint"  min="0.0"     max="${gripper_open}"/>
+
+    </ros2_control>
+  </xacro:macro>
+
+</robot>

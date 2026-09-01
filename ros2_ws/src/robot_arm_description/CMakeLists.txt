@@ -9,6 +9,8 @@ install(
     STL
     launch
     rviz
+    config
+    test
   DESTINATION share/${PROJECT_NAME}
 )
 

@@ -1,0 +1,73 @@
+# ros2_control controller configuration for the robot arm.
+#
+# NOT VERIFIED AT RUNTIME. Controller plugin names, parameter names, and the
+# update rate must be confirmed in the Ubuntu VM against the installed
+# ros2_control version.
+#
+# Joint grouping:
+#   arm_controller     base yaw, shoulder, elbow, wrist  (4 joints)
+#   gripper_controller gripper_joint                     (1 joint)
+#
+# right_gripper_joint is absent on purpose - it is a URDF mimic joint and must
+# not have an independent command interface.
+
+controller_manager:
+  ros__parameters:
+    # 100 Hz. The UTM VM renders in software, so a faster loop mostly costs CPU
+    # that the renderer needs. Raise it once running on real hardware.
+    update_rate: 100
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    arm_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    gripper_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+joint_state_broadcaster:
+  ros__parameters:
+    use_local_topics: false
+
+arm_controller:
+  ros__parameters:
+    joints:
+      - base_yaw_joint
+      - shoulder_joint
+      - elbow_joint
+      - wrist_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    # Provisional gains and tolerances. These have never been tuned against
+    # real dynamics; treat them as a starting point, not a result.
+    state_publish_rate: 50.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    constraints:
+      stopped_velocity_tolerance: 0.05
+      goal_time: 2.0
+      base_yaw_joint: {trajectory: 0.20, goal: 0.05}
+      shoulder_joint: {trajectory: 0.20, goal: 0.05}
+      elbow_joint:    {trajectory: 0.20, goal: 0.05}
+      wrist_joint:    {trajectory: 0.20, goal: 0.05}
+
+gripper_controller:
+  ros__parameters:
+    joints:
+      - gripper_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    state_publish_rate: 50.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    constraints:
+      stopped_velocity_tolerance: 0.05
+      goal_time: 2.0
+      gripper_joint: {trajectory: 0.10, goal: 0.02}
