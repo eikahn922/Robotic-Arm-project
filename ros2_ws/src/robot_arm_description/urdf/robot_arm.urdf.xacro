@@ -2,7 +2,6 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="robot_arm">
   <!-- CAD-derived upper-arm joint spacing; remaining dimensions are provisional. -->
   <xacro:property name="upper_arm_length" value="0.12"/>
-  <xacro:property name="forearm_length" value="0.18"/>
 
   <material name="dark_gray">
     <color rgba="0.22 0.24 0.27 1"/>
@@ -102,19 +101,95 @@
     <limit lower="-2.0944" upper="2.0944" effort="10.0" velocity="1.0"/>
   </joint>
 
-  <link name="gripper_link">
-    <visual>
-      <origin xyz="0.04 0 0" rpy="0 0 0"/>
+  <link name="wrist_gripper_link">
+    <!-- Link #3, exported directly from RobotArmAssembly (1).STEP. -->
+    <visual name="wrist_link_visual">
+      <origin xyz="0.033726552 0.016000000 -0.093875834"
+              rpy="-3.141592654 0.347914624 -3.141592654"/>
       <geometry>
-        <box size="0.08 0.08 0.04"/>
+        <mesh
+          filename="package://robot_arm_description/STL/wrist_link.stl"
+          scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <!-- Neutral-pose gripper assembly. Repeated parts are separate STEP occurrences. -->
+    <visual name="gripper_base_visual">
+      <origin xyz="0.017514213 0.029001510 -0.149778624"
+              rpy="2.126155499 0 -1.570796327"/>
+      <geometry>
+        <mesh filename="package://robot_arm_description/STL/gripper_base.stl"
+              scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <visual name="left_gear_visual">
+      <origin xyz="0.017514213 0.012101510 -0.149778624"
+              rpy="-3.141592654 0.555359172 3.141592654"/>
+      <geometry>
+        <mesh filename="package://robot_arm_description/STL/gripper_gear.stl"
+              scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+
+    <visual name="right_gear_visual">
+      <origin xyz="0.022786699 0.039001227 -0.158275735"
+              rpy="-0.078000890 0.550424487 2.993259754"/>
+      <geometry>
+        <mesh filename="package://robot_arm_description/STL/gripper_gear.stl"
+              scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+
+    <visual name="left_connecting_link_visual">
+      <origin xyz="-0.010545365 0.020845127 -0.171897166"
+              rpy="0.006154655 0.555328648 -3.129919305"/>
+      <geometry>
+        <mesh filename="package://robot_arm_description/STL/gripper_connecting_link.stl"
+              scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+
+    <visual name="right_connecting_link_visual">
+      <origin xyz="-0.010465544 0.032709649 -0.171847637"
+              rpy="0.068379906 -0.551572497 -0.129956425"/>
+      <geometry>
+        <mesh filename="package://robot_arm_description/STL/gripper_connecting_link.stl"
+              scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+
+    <visual name="left_finger_visual">
+      <origin xyz="-0.017219319 0.016396447 -0.171330894"
+              rpy="-0.237694726 0.506818324 2.678644506"/>
+      <geometry>
+        <mesh filename="package://robot_arm_description/STL/gripper_finger.stl"
+              scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <visual name="right_finger_visual">
+      <origin xyz="-0.019408061 0.038647484 -0.167393098"
+              rpy="-2.907517869 0.508382631 -2.686091663"/>
+      <geometry>
+        <mesh filename="package://robot_arm_description/STL/gripper_finger.stl"
+              scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="orange"/>
     </visual>
   </link>
 
-  <joint name="gripper_mount_joint" type="fixed">
+  <joint name="wrist_gripper_mount_joint" type="fixed">
     <parent link="forearm_link"/>
-    <child link="gripper_link"/>
-    <origin xyz="${forearm_length} 0 0" rpy="0 0 0"/>
+    <child link="wrist_gripper_link"/>
+    <!-- Visual origins above are expressed directly in the forearm link frame. -->
+    <origin xyz="0 0 0" rpy="0 0 0"/>
   </joint>
 </robot>
