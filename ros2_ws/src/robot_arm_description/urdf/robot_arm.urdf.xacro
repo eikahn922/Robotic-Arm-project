@@ -11,6 +11,35 @@
   -->
   <xacro:property name="gripper_open" value="0.30"/>
 
+  <!--
+    Mass properties.
+
+    Every mass and inertia below is computed by integrating the committed STL
+    meshes (divergence theorem over the closed surface) and multiplying by
+    pla_density. Nothing here is estimated by eye.
+
+    Change pla_density alone and every mass and inertia rescales correctly,
+    because the stored numbers are per-unit-density volume integrals.
+
+    Cross-check: this method gives the upper arm 79.78 g. The analysis workbook
+    implies 79.71 g for the same part (297.31 g shoulder-moving minus 217.60 g
+    elbow-moving). Agreement is 0.1%, which independently validates both the
+    integration and the density.
+
+    KNOWN GAP - these are PRINTED-PART masses only. The workbook's moving-mass
+    figures exceed the mesh sums by a near-constant 82.5 g at both the shoulder
+    and the elbow, which is the servo, fastener, and hardware mass distal to the
+    elbow. It is deliberately NOT distributed here: workbook validation item 3
+    ("confirm the servo body mounting side for each joint") is still open, so
+    assigning it to specific links would be a guess presented as a measurement.
+    Add it once mounting sides are confirmed.
+
+    ALSO PROVISIONAL - pla_density is the solid-model value. Workbook validation
+    item 1 requires replacing it with slicer-estimated masses once infill, wall
+    count, and supports are chosen. Expect the real printed parts to be lighter.
+  -->
+  <xacro:property name="pla_density" value="1240.0"/>
+
   <material name="dark_gray">
     <color rgba="0.22 0.24 0.27 1"/>
   </material>
@@ -22,6 +51,14 @@
   </material>
 
   <link name="base_link">
+    <inertial>
+      <origin xyz="0.00107986407 -6.18358027e-07 0.0221277793" rpy="0 0 0"/>
+      <mass value="${9.47078684e-05 * pla_density}"/>
+      <inertia ixx="${1.28706199e-07 * pla_density}" ixy="${3.46682081e-12 * pla_density}" ixz="${3.75517752e-09 * pla_density}"
+               iyy="${1.34701532e-07 * pla_density}" iyz="${1.60120083e-12 * pla_density}"
+               izz="${2.05376811e-07 * pla_density}"/>
+    </inertial>
+
     <visual>
       <!-- SolidWorks exported the mesh Y-up; rotate it into ROS Z-up. -->
       <origin xyz="0 0 0" rpy="1.5708 0 0"/>
@@ -44,6 +81,14 @@
   </link>
 
   <link name="waist_link">
+    <inertial>
+      <origin xyz="-0.00467023461 0.00793675396 0.0231640523" rpy="0 0 0"/>
+      <mass value="${8.35641672e-05 * pla_density}"/>
+      <inertia ixx="${6.2775338e-08 * pla_density}" ixy="${1.442602e-09 * pla_density}" ixz="${1.03593476e-08 * pla_density}"
+               iyy="${8.8335047e-08 * pla_density}" iyz="${-7.61488194e-09 * pla_density}"
+               izz="${6.83909909e-08 * pla_density}"/>
+    </inertial>
+
     <visual>
       <!-- Rotate the Y-up CAD mesh into ROS Z-up, then yaw it into the CAD assembly orientation. -->
       <origin xyz="0 0 0" rpy="1.5708 0 1.5708"/>
@@ -75,6 +120,14 @@
   </joint>
 
   <link name="upper_arm_link">
+    <inertial>
+      <origin xyz="0.0599999261 0.00268461785 5.18655088e-07" rpy="0 0 0"/>
+      <mass value="${6.43360473e-05 * pla_density}"/>
+      <inertia ixx="${9.29897451e-09 * pla_density}" ixy="${-3.55309654e-13 * pla_density}" ixz="${-4.47940028e-12 * pla_density}"
+               iyy="${1.08720531e-07 * pla_density}" iyz="${-5.45582481e-14 * pla_density}"
+               izz="${1.03835897e-07 * pla_density}"/>
+    </inertial>
+
     <visual>
       <!--
         STEP-derived mesh transform about the shoulder-servo shaft. The STL origin
@@ -108,6 +161,14 @@
   </joint>
 
   <link name="forearm_link">
+    <inertial>
+      <origin xyz="0.0160694724 0.0163146104 -0.0445323533" rpy="0 0 0"/>
+      <mass value="${5.72611052e-05 * pla_density}"/>
+      <inertia ixx="${5.95331447e-08 * pla_density}" ixy="${2.59647282e-10 * pla_density}" ixz="${1.77838276e-08 * pla_density}"
+               iyy="${6.99805381e-08 * pla_density}" iyz="${-7.1432358e-10 * pla_density}"
+               izz="${1.71605271e-08 * pla_density}"/>
+    </inertial>
+
     <visual>
       <!--
         STEP-derived transform relative to the corrected upper-arm mesh. The
@@ -151,6 +212,14 @@
     frame's Y axis, so the wrist pitches in the same plane as shoulder and elbow.
   -->
   <link name="wrist_link">
+    <inertial>
+      <origin xyz="-2.42085612e-05 0.00594423645 0.0195846505" rpy="0 0 0"/>
+      <mass value="${1.56507039e-05 * pla_density}"/>
+      <inertia ixx="${3.64554578e-09 * pla_density}" ixy="${-2.24179141e-12 * pla_density}" ixz="${-6.90925407e-12 * pla_density}"
+               iyy="${4.86784764e-09 * pla_density}" iyz="${-3.94886004e-10 * pla_density}"
+               izz="${2.41509829e-09 * pla_density}"/>
+    </inertial>
+
     <visual name="wrist_link_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -181,6 +250,14 @@
 
   <!-- Gripper base, rigidly bolted to the wrist. -->
   <link name="gripper_base_link">
+    <inertial>
+      <origin xyz="0.00318308193 0.00755952549 -0.0130397199" rpy="0 0 0"/>
+      <mass value="${1.60468383e-05 * pla_density}"/>
+      <inertia ixx="${7.26166118e-09 * pla_density}" ixy="${4.03840618e-10 * pla_density}" ixz="${-1.7881094e-09 * pla_density}"
+               iyy="${9.01153601e-09 * pla_density}" iyz="${1.3403234e-09 * pla_density}"
+               izz="${3.29863321e-09 * pla_density}"/>
+    </inertial>
+
     <visual name="gripper_base_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -224,6 +301,14 @@
     in world space, so the mimic multiplier is +1, not -1.
   -->
   <link name="left_gripper_link">
+    <inertial>
+      <origin xyz="0.021491332 0.00285382366 0.00278880384" rpy="0 0 0"/>
+      <mass value="${9.95847365e-06 * pla_density}"/>
+      <inertia ixx="${5.28681477e-10 * pla_density}" ixy="${-7.45464239e-10 * pla_density}" ixz="${6.95154139e-10 * pla_density}"
+               iyy="${6.77579585e-09 * pla_density}" iyz="${8.57273891e-11 * pla_density}"
+               izz="${6.9847835e-09 * pla_density}"/>
+    </inertial>
+
     <visual name="left_gear_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -274,6 +359,14 @@
   </joint>
 
   <link name="right_gripper_link">
+    <inertial>
+      <origin xyz="0.0211377991 0.00379476019 0.00721119918" rpy="0 0 0"/>
+      <mass value="${9.95847365e-06 * pla_density}"/>
+      <inertia ixx="${6.62256377e-10 * pla_density}" ixy="${-1.08780871e-09 * pla_density}" ixz="${-6.81478036e-10 * pla_density}"
+               iyy="${6.53666692e-09 * pla_density}" iyz="${-1.26132506e-10 * pla_density}"
+               izz="${6.87922951e-09 * pla_density}"/>
+    </inertial>
+
     <visual name="right_gear_visual">
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>

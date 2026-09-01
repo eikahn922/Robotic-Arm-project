@@ -89,6 +89,24 @@ def axis_rotation(axis, theta):
     return [R[i] + [0.0] for i in range(3)] + [[0.0, 0.0, 0.0, 1.0]]
 
 
+def _eigvals_sym3(M):
+    """Closed-form eigenvalues of a symmetric 3x3 matrix (no numpy)."""
+    p1 = M[0][1] ** 2 + M[0][2] ** 2 + M[1][2] ** 2
+    q = (M[0][0] + M[1][1] + M[2][2]) / 3.0
+    if p1 == 0:
+        return [M[0][0], M[1][1], M[2][2]]
+    p2 = sum((M[i][i] - q) ** 2 for i in range(3)) + 2 * p1
+    p = math.sqrt(p2 / 6.0)
+    B = [[(M[i][j] - (q if i == j else 0)) / p for j in range(3)] for i in range(3)]
+    detB = (B[0][0] * (B[1][1] * B[2][2] - B[1][2] * B[2][1])
+            - B[0][1] * (B[1][0] * B[2][2] - B[1][2] * B[2][0])
+            + B[0][2] * (B[1][0] * B[2][1] - B[1][1] * B[2][0]))
+    phi = math.acos(max(-1.0, min(1.0, detB / 2.0))) / 3.0
+    e1 = q + 2 * p * math.cos(phi)
+    e3 = q + 2 * p * math.cos(phi + 2 * math.pi / 3)
+    return [e1, 3 * q - e1 - e3, e3]
+
+
 # ------------------------------------------------------------------- STL reader
 def stl_vertices(path):
     with open(path, "rb") as fh:
@@ -107,15 +125,31 @@ def stl_vertices(path):
 
 
 # ----------------------------------------------------------------- parse xacro
+_SAFE = re.compile(r"^[0-9eE+\-*/(). ]+$")
+
+
+def _eval_expr(expr: str, props: dict) -> str:
+    """Evaluate one ${...} body: substitute properties, then do the arithmetic.
+
+    Only bare numbers and the four operators survive the safety check, so this
+    cannot execute arbitrary code from the Xacro.
+    """
+    body = expr
+    for _ in range(5):
+        before = body
+        for key, value in props.items():
+            body = re.sub(r"\b" + re.escape(key) + r"\b", "(" + value + ")", body)
+        if body == before:
+            break
+    if not _SAFE.match(body):
+        raise ValueError(f"unsafe or unresolved xacro expression: {expr!r} -> {body!r}")
+    return repr(eval(body, {"__builtins__": {}}, {}))       # noqa: S307 - guarded above
+
+
 def load_model():
     raw = open(XACRO).read()
     props = dict(re.findall(r'<xacro:property\s+name="([^"]+)"\s+value="([^"]+)"', raw))
-    text = raw
-    for _ in range(5):
-        for key, value in props.items():
-            text = text.replace("${" + key + "}", value)
-        if "${" not in text:
-            break
+    text = re.sub(r"\$\{([^}]*)\}", lambda m: _eval_expr(m.group(1), props), raw)
     return raw, text, props
 
 
@@ -370,6 +404,35 @@ def main() -> int:
             else:
                 check(f"{name}/{short} fully inside its collision primitive", frac >= 0.999,
                       f"{frac * 100:.1f}% of {len(pts)} sampled vertices")
+
+    # ------------------------------------------------ 7c. inertial properties
+    section("7c. Inertial properties")
+    for name, link in links.items():
+        inert = link.find("inertial")
+        if not check(f"{name} has an inertial block", inert is not None):
+            continue
+        mass = float(inert.find("mass").get("value"))
+        check(f"{name} mass is positive and finite", math.isfinite(mass) and mass > 0,
+              f"{mass * 1000:.2f} g")
+        el = inert.find("inertia")
+        ixx, iyy, izz = (float(el.get(k)) for k in ("ixx", "iyy", "izz"))
+        ixy, ixz, iyz = (float(el.get(k)) for k in ("ixy", "ixz", "iyz"))
+        M = [[ixx, ixy, ixz], [ixy, iyy, iyz], [ixz, iyz, izz]]
+        check(f"{name} inertia entries finite",
+              all(math.isfinite(v) for row in M for v in row))
+        # Sylvester's criterion: all leading principal minors positive
+        d1 = ixx
+        d2 = ixx * iyy - ixy * ixy
+        d3 = (ixx * (iyy * izz - iyz * iyz)
+              - ixy * (ixy * izz - iyz * ixz)
+              + ixz * (ixy * iyz - iyy * ixz))
+        check(f"{name} inertia tensor is positive-definite", d1 > 0 and d2 > 0 and d3 > 0,
+              f"minors {d1:.3e}, {d2:.3e}, {d3:.3e}")
+        # principal moments must satisfy the triangle inequality for a real body
+        p = sorted(_eigvals_sym3(M))
+        check(f"{name} principal moments satisfy the triangle inequality",
+              p[0] + p[1] >= p[2] * (1 - 1e-9),
+              f"{p[0]:.3e} + {p[1]:.3e} >= {p[2]:.3e}")
 
     # ------------------------------------------------- 8. repository hygiene
     section("8. Repository hygiene")

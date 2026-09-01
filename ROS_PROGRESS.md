@@ -196,10 +196,33 @@ LIBGL_ALWAYS_SOFTWARE=1 ros2 launch robot_arm_description display.launch.py
 - `gripper_base_link` is the loosest primitive at roughly 7.2x the true part volume, because the part
   is an open forked bracket. A convex hull would be tighter if grasp clearance becomes a problem.
 
+**Completed: inertial properties**
+
+- Every link now carries mass, centre of mass, and a full inertia tensor obtained by integrating the
+  committed STL meshes (divergence theorem over the closed surface), multiplied by `pla_density`.
+- The stored numbers are per-unit-density volume integrals, so changing `pla_density` alone rescales
+  every mass *and* every inertia correctly. That matters because workbook validation item 1 requires
+  replacing the solid-model density with slicer estimates once infill and walls are chosen.
+- Independent cross-check: this method gives the upper arm **79.78 g**. The analysis workbook implies
+  **79.71 g** for the same part (297.31 g shoulder-moving minus 217.60 g elbow-moving). Agreement is
+  0.1%, which validates both the mesh integration and the 1240 kg/m³ density from two directions.
+- Every tensor is positive-definite (Sylvester's criterion) and every set of principal moments
+  satisfies the triangle inequality, so all eight are physically realisable rigid bodies.
+- Total printed-part mass is 435.8 g.
+
+**Known gap, deliberately not filled**
+
+- These are **printed-part masses only**. The workbook's moving-mass figures exceed the mesh sums by
+  a near-constant **82.5 g** at both the shoulder and the elbow — servo, fastener, and hardware mass
+  distal to the elbow. It is not distributed across links here, because workbook validation item 3
+  ("confirm the servo body mounting side for each joint") is still open. Assigning it without that
+  confirmation would be a guess dressed up as a measurement. Add it once mounting sides are known.
+
 **Remaining**
 
-- Add the measured mass, center of mass, and inertia for each moving link.
-- Compare calculated joint torque requirements against the selected servos.
+- Compare calculated joint torque requirements against the selected servos once servo masses are
+  placed. The workbook already reports the shoulder as the limiting joint at 69.5% design
+  utilisation with a 1.44x stall margin, and that figure already includes the hardware mass.
 
 ### Step 8 — Add control and simulation
 
