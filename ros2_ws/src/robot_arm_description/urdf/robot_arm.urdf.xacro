@@ -3,6 +3,14 @@
   <!-- CAD-derived upper-arm joint spacing; remaining dimensions are provisional. -->
   <xacro:property name="upper_arm_length" value="0.12"/>
 
+  <!--
+    Gripper travel. Zero is the STEP neutral pose, which is the closed gripper
+    (2.65 mm between fingertips). Positive rotation opens the jaws; 0.30 rad
+    gives roughly 49 mm of fingertip separation. This is a provisional
+    kinematic limit and should be replaced with the measured mechanical stop.
+  -->
+  <xacro:property name="gripper_open" value="0.30"/>
+
   <material name="dark_gray">
     <color rgba="0.22 0.24 0.27 1"/>
   </material>
@@ -101,11 +109,16 @@
     <limit lower="-2.0944" upper="2.0944" effort="10.0" velocity="1.0"/>
   </joint>
 
-  <link name="wrist_gripper_link">
-    <!-- Link #3, exported directly from RobotArmAssembly (1).STEP. -->
+  <!--
+    Wrist. Link #3 is now its own moving link instead of part of a fixed
+    wrist_gripper_link. The joint frame is the STEP wrist frame expressed in the
+    forearm frame, so the mesh sits at the link origin and zero reproduces the
+    STEP neutral pose exactly. The wrist frame's Y axis maps onto the forearm
+    frame's Y axis, so the wrist pitches in the same plane as shoulder and elbow.
+  -->
+  <link name="wrist_link">
     <visual name="wrist_link_visual">
-      <origin xyz="0.033726552 0.016000000 -0.093875834"
-              rpy="-3.141592654 0.347914624 -3.141592654"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh
           filename="package://robot_arm_description/STL/wrist_link.stl"
@@ -113,31 +126,55 @@
       </geometry>
       <material name="orange"/>
     </visual>
+  </link>
 
-    <!-- Neutral-pose gripper assembly. Repeated parts are separate STEP occurrences. -->
+  <joint name="wrist_joint" type="revolute">
+    <parent link="forearm_link"/>
+    <child link="wrist_link"/>
+    <origin xyz="0.033726552 0.016000000 -0.093875834"
+            rpy="-3.141592654 0.347914624 -3.141592654"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-1.5708" upper="1.5708" effort="10.0" velocity="1.0"/>
+  </joint>
+
+  <!-- Gripper base, rigidly bolted to the wrist. -->
+  <link name="gripper_base_link">
     <visual name="gripper_base_visual">
-      <origin xyz="0.017514213 0.029001510 -0.149778624"
-              rpy="2.126155499 0 -1.570796327"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://robot_arm_description/STL/gripper_base.stl"
               scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="orange"/>
     </visual>
+  </link>
 
+  <joint name="gripper_base_joint" type="fixed">
+    <parent link="wrist_link"/>
+    <child link="gripper_base_link"/>
+    <origin xyz="0.034300380 0.013001510 0.047026012"
+            rpy="-1.363351778 0 -1.570796327"/>
+  </joint>
+
+  <!--
+    Gripper sides.
+
+    The real mechanism is a geared four-bar closed loop: each gear drives a
+    connecting link that drives a finger. URDF cannot express a closed kinematic
+    chain, so each side is approximated as ONE rigid body - gear, connecting
+    link, and finger together - pivoting about its gear axis. The connecting
+    link and finger therefore do not articulate relative to their gear; this is
+    a visual and workspace approximation, not a mechanism simulation.
+
+    Both gear frames share a common spin axis: the left and right local Z axes
+    are exactly anti-parallel in the gripper-base frame (dot product -1.000000),
+    which is the meshing-gear signature. Because the axes are anti-parallel,
+    driving both sides with the SAME signed angle produces true counter-rotation
+    in world space, so the mimic multiplier is +1, not -1.
+  -->
+  <link name="left_gripper_link">
     <visual name="left_gear_visual">
-      <origin xyz="0.017514213 0.012101510 -0.149778624"
-              rpy="-3.141592654 0.555359172 3.141592654"/>
-      <geometry>
-        <mesh filename="package://robot_arm_description/STL/gripper_gear.stl"
-              scale="0.001 0.001 0.001"/>
-      </geometry>
-      <material name="dark_gray"/>
-    </visual>
-
-    <visual name="right_gear_visual">
-      <origin xyz="0.022786699 0.039001227 -0.158275735"
-              rpy="-0.078000890 0.550424487 2.993259754"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
         <mesh filename="package://robot_arm_description/STL/gripper_gear.stl"
               scale="0.001 0.001 0.001"/>
@@ -146,18 +183,8 @@
     </visual>
 
     <visual name="left_connecting_link_visual">
-      <origin xyz="-0.010545365 0.020845127 -0.171897166"
-              rpy="0.006154655 0.555328648 -3.129919305"/>
-      <geometry>
-        <mesh filename="package://robot_arm_description/STL/gripper_connecting_link.stl"
-              scale="0.001 0.001 0.001"/>
-      </geometry>
-      <material name="blue"/>
-    </visual>
-
-    <visual name="right_connecting_link_visual">
-      <origin xyz="-0.010465544 0.032709649 -0.171847637"
-              rpy="0.068379906 -0.551572497 -0.129956425"/>
+      <origin xyz="0.035504505 0.008743617 0.004000000"
+              rpy="-3.141592654 0 -0.009919099"/>
       <geometry>
         <mesh filename="package://robot_arm_description/STL/gripper_connecting_link.stl"
               scale="0.001 0.001 0.001"/>
@@ -166,18 +193,8 @@
     </visual>
 
     <visual name="left_finger_visual">
-      <origin xyz="-0.017219319 0.016396447 -0.171330894"
-              rpy="-0.237694726 0.506818324 2.678644506"/>
-      <geometry>
-        <mesh filename="package://robot_arm_description/STL/gripper_finger.stl"
-              scale="0.001 0.001 0.001"/>
-      </geometry>
-      <material name="orange"/>
-    </visual>
-
-    <visual name="right_finger_visual">
-      <origin xyz="-0.019408061 0.038647484 -0.167393098"
-              rpy="-2.907517869 0.508382631 -2.686091663"/>
+      <origin xyz="0.040876871 0.004294937 0"
+              rpy="-3.141592654 0 0.401119022"/>
       <geometry>
         <mesh filename="package://robot_arm_description/STL/gripper_finger.stl"
               scale="0.001 0.001 0.001"/>
@@ -186,10 +203,58 @@
     </visual>
   </link>
 
-  <joint name="wrist_gripper_mount_joint" type="fixed">
-    <parent link="forearm_link"/>
-    <child link="wrist_gripper_link"/>
-    <!-- Visual origins above are expressed directly in the forearm link frame. -->
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+  <!-- Actuated gripper side. This is the single user-facing gripper control. -->
+  <joint name="gripper_joint" type="revolute">
+    <parent link="gripper_base_link"/>
+    <child link="left_gripper_link"/>
+    <origin xyz="0.016900000 0 0"
+            rpy="3.141592654 -1.570796327 -1.570796327"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="0.0" upper="${gripper_open}" effort="5.0" velocity="1.0"/>
+  </joint>
+
+  <link name="right_gripper_link">
+    <visual name="right_gear_visual">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://robot_arm_description/STL/gripper_gear.stl"
+              scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark_gray"/>
+    </visual>
+
+    <visual name="right_connecting_link_visual">
+      <origin xyz="0.034336030 0.010701831 0.006000000"
+              rpy="0 0 -3.125893888"/>
+      <geometry>
+        <mesh filename="package://robot_arm_description/STL/gripper_connecting_link.stl"
+              scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="blue"/>
+    </visual>
+
+    <visual name="right_finger_visual">
+      <origin xyz="0.040292060 0.005472576 0.014500000"
+              rpy="-3.141592654 0 0.520722397"/>
+      <geometry>
+        <mesh filename="package://robot_arm_description/STL/gripper_finger.stl"
+              scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+  </link>
+
+  <!--
+    Mirrored side. The mimic tag keeps this passive, so joint_state_publisher_gui
+    exposes exactly five controls: base yaw, shoulder, elbow, wrist, and gripper.
+  -->
+  <joint name="right_gripper_joint" type="revolute">
+    <parent link="gripper_base_link"/>
+    <child link="right_gripper_link"/>
+    <origin xyz="-0.009999717 -0.010000000 0"
+            rpy="1.570796327 -1.444499427 3.141592654"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="0.0" upper="${gripper_open}" effort="5.0" velocity="1.0"/>
+    <mimic joint="gripper_joint" multiplier="1.0" offset="0.0"/>
   </joint>
 </robot>

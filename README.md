@@ -1,6 +1,6 @@
 # Robotic Arm Project
 
-This repository documents the mechanical design, engineering analysis, and ROS 2 development of a 3-DOF robotic arm. It is organized so each stage can be reviewed and reproduced independently.
+This repository documents the mechanical design, engineering analysis, and ROS 2 development of a robotic arm with three arm joints, a wrist, and a mimic-driven gripper. It is organized so each stage can be reviewed and reproduced independently.
 
 ## Project artifacts
 
@@ -9,7 +9,8 @@ This repository documents the mechanical design, engineering analysis, and ROS 2
 | Active timeline | [3-DOF Robotic Arm Project Timeline](docs/project-workflow/PROJECT_TIMELINE.md) | Daily development plan through August 18, including remote-work constraints and completion criteria. |
 | Physical build | [Parts List and Purchase Tracker](physical-build/README.md) | Torque-driven actuator selection, power distribution, wiring, fasteners, camera plan, and purchase tracker. |
 | ROS 2 progress | [ROS 2 Progress](ROS_PROGRESS.md) | Recruiter-friendly milestone log covering the completed setup, URDF/Xacro model, RViz result, lessons learned, and next steps. |
-| ROS 2 package | [robot_arm_description](ros2_ws/src/robot_arm_description) | Reproducible ROS 2 Jazzy package containing the complete neutral-pose CAD geometry: base, waist, upper arm, forearm, wrist, and all seven gripper part instances. |
+| ROS 2 package | [robot_arm_description](ros2_ws/src/robot_arm_description) | Reproducible ROS 2 Jazzy package containing the complete CAD geometry — base, waist, upper arm, forearm, wrist, and all seven gripper part instances — with five commanded joints and a mimic gripper side. |
+| Ubuntu VM guide | [VM Handoff](docs/VM_HANDOFF.md) | Exact Ubuntu 24.04 ARM64 commands to update, build, launch, and troubleshoot the RViz visualization. |
 | ROS 2 base mesh | [base_link.stl](ros2_ws/src/robot_arm_description/STL/base_link.stl) | Meter-scaled binary STL exported from SolidWorks for the fixed robot base. |
 | ROS 2 waist mesh | [waist_link.stl](ros2_ws/src/robot_arm_description/STL/waist_link.stl) | Meter-scaled binary STL exported from SolidWorks for the rotating waist link. |
 | ROS 2 upper-arm mesh | [upper_arm_link.stl](ros2_ws/src/robot_arm_description/STL/upper_arm_link.stl) | Meter-scaled binary STL with a shoulder-centered origin and 120 mm shoulder-to-elbow spacing. |

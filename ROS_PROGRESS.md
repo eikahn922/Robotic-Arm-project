@@ -4,11 +4,17 @@
 
 - Built a working ROS 2 Jazzy development environment on Ubuntu 24.04 ARM64.
 - Created and validated a reusable ROS 2 robot-description package.
-- Modeled the arm as a five-link URDF/Xacro kinematic chain with three revolute joints.
+- Modeled the arm as an eight-link URDF/Xacro kinematic chain with five commanded joints and one mimic joint.
 - Published the robot state and TF tree and rendered the placeholder arm successfully in RViz.
 - Integrated the SolidWorks base, waist, upper-arm, forearm, wrist, and complete neutral-pose gripper geometry into the robot model.
 - Extracted a 120 mm shoulder-to-elbow spacing from the upper-arm CAD geometry.
-- Current phase: verify the complete CAD assembly in RViz, then split the rigid wrist/gripper group into actuated joints.
+- Split the rigid `wrist_gripper_link` into `wrist_link`, `gripper_base_link`, and two moving gripper sides.
+- Added `wrist_joint` and `gripper_joint`, with the opposing gripper side driven by a mimic joint.
+- Current phase: verify the five joint controls in RViz, then add collision and inertial properties.
+
+> **Terminology.** This is an RViz *kinematic visualization*, not a physics simulation. It runs
+> `robot_state_publisher`, `joint_state_publisher_gui`, and RViz. Gazebo Sim and `ros2_control` are
+> not implemented yet, so nothing here computes mass, contact, or gravity.
 
 ![Placeholder 3-DOF arm rendered in RViz](docs/images/ros/rviz-placeholder-arm.png)
 
@@ -122,6 +128,42 @@ LIBGL_ALWAYS_SOFTWARE=1 ros2 launch robot_arm_description display.launch.py
 - Measure and enter the remaining exact joint origins and rotation axes.
 - Replace provisional motion limits with the physical servo/link limits.
 - Confirm that each RViz joint moves in the correct direction without separating the assembly.
+
+### Step 6b — Split the wrist and gripper into moving joints
+
+**Completed**
+
+- Replaced the single fixed `wrist_gripper_link` with four links: `wrist_link`, `gripper_base_link`,
+  `left_gripper_link`, and `right_gripper_link`.
+- Added `wrist_joint` (revolute) between the forearm and the wrist, using the STEP wrist frame.
+- Added `gripper_joint` (revolute) as the single commanded gripper control, and
+  `right_gripper_joint` as a mirrored `mimic` joint so the GUI exposes exactly five sliders.
+- Kept every joint's zero position at the STEP neutral pose. A static check confirms the split model
+  reproduces the previous single-link placement of all twelve visuals to within 1.04 nanometres,
+  which is the rounding of the previous file's nine-decimal literals rather than a modelling error.
+
+**Engineering notes**
+
+- The wrist frame's Y axis maps exactly onto the forearm frame's Y axis, so `wrist_joint` pitches in
+  the same plane as the shoulder and elbow. Its axis is `0 1 0`.
+- Both gripper gear frames share one spin axis: their local Z axes are exactly anti-parallel in the
+  gripper-base frame (dot product −1.000000), which is the meshing-gear signature. Because they are
+  anti-parallel, driving both sides with the *same* signed angle counter-rotates them in world space,
+  so the mimic multiplier is `+1`, not `−1`.
+- The STEP neutral pose is the **closed** gripper: fingertip separation is 2.65 mm at zero. Positive
+  rotation opens the jaws, reaching roughly 49 mm of separation at the provisional 0.30 rad limit.
+
+**Known approximation**
+
+- The real gripper is a geared four-bar closed loop. URDF cannot express a closed kinematic chain, so
+  each side is modelled as one rigid gear/connector/finger group pivoting about its gear axis. The
+  connector and finger do not articulate relative to their gear. This is a tree-safe visual and
+  workspace approximation, not a mechanism simulation.
+
+**Provisional values, not measurements**
+
+- `wrist_joint` limits are ±1.5708 rad and `gripper_joint` limits are 0 to 0.30 rad. Both are
+  conservative placeholders chosen from the geometry, not measured mechanical stops.
 
 ### Step 7 — Add engineering properties
 
